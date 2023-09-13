@@ -3,7 +3,11 @@
 from course import Course
 from bs4 import BeautifulSoup
 import urllib.request
+
+#NOTE: only needed for cli interactive functionality
+DEBUG = False
 import sys
+import pprint
 
 def get_courses(href: str) -> list[Course]:
     '''
@@ -14,14 +18,12 @@ def get_courses(href: str) -> list[Course]:
     webpage = BeautifulSoup(fd, 'html.parser')
 
     # Course entries are stored in a big table 1-column table
-    # (class=dataidisplaytable):
+    # (class=datadisplaytable):
     #   <td class="nttitle"> for course headers
     #   <td class="ntdefault"> for course info
-    #   usually there entries are in successive rows
+    #   usually these entries are in successive rows
     data_display_table = webpage.find('table', class_='datadisplaytable')
     table_entries = data_display_table.find_all('td')
-    #    for entry in table_entries:
-    #       print('\n----\n%r' % entry)
         
     if len(table_entries) == 0:
         return []
@@ -30,28 +32,43 @@ def get_courses(href: str) -> list[Course]:
     results = []
     
     for cur_entry in table_entries:
-        #print('cur class: %s, prev_class: %s' % (cur_entry['class'],  prev_entry['class']))
-        if cur_entry['class'][0] ==  'ntdefault' and prev_entry['class'][0] == 'nttitle':
-            #print('inside')
-            results.append(create_course(cur_entry, prev_entry))
+        if cur_entry['class'][0] == 'ntdefault' and prev_entry['class'][0] == 'nttitle':
+            results.append(parse_course_info(cur_entry, prev_entry))
         prev_entry = cur_entry
 
     return results
 
-def create_course(ntdefault_entry, nttitle_entry) -> Course:
+def parse_course_info(ntdefault_entry, nttitle_entry) -> Course:
     '''
-    ... 
+    Parse the ntdefault and nttitle entries of a course, creating and returning
+    a Course object based on the entries
+        - Returned Course has empty prereq and coreq data
     '''
-    cal_link  = ntdefault_entry.find('a')['href']
+    cal_link_tag  = ntdefault_entry.find('a')
+
+    if DEBUG: print(ntdefault_entry)
+    # FIXME: searching for string value of Calendar on first tag works
+    #        but is a bodge and should be fixed
+    cal_link = cal_link_tag['href'] if (cal_link_tag and 
+                                        cal_link_tag.string == 'Calendar') else None
+
     long_name = nttitle_entry.find('a').string
-    course_name, course_title = long_name.split('-')
+
+    # long_name has a format like 'CSC 110 - Fundamentals of Programming I'
+    # The spaces surrounding '-' are needed to avoid splitting on 'CO-OP'
+    course_name, course_title = long_name.split(' - ')
     dep, num = course_name.strip().split(' ')
-    num = int(num)
     course_title = course_title.strip()
 
     return Course(dep, num, course_title, {}, {}, cal_link)
   
  
-results = get_courses(sys.argv[1])
-#results = get_courses('https://www.uvic.ca/BAN1P/bwckctlg.p_display_courses?term_in=202009&one_subj=CHEM&sel_crse_strt=101&sel_crse_end=115&sel_subj=&sel_levl=&sel_schd=&sel_coll=&sel_divs=&sel_dept=&sel_attr=')
-print(results)
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("usage: %s <UVic Banner search link> <-d>" % (sys.argv[0]))
+        sys.exit(1)
+
+    if len(sys.argv) > 2 and '-d' in sys.argv[2]: DEBUG = True
+
+    results = get_courses(sys.argv[1])
+    pprint.pprint(results)
