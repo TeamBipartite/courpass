@@ -3,14 +3,12 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 
-
 WEBDRIVERS  = {webdriver.ChromeOptions: webdriver.Chrome, 
                webdriver.EdgeOptions: webdriver.Edge,
                webdriver.SafariOptions: webdriver.Safari,
                webdriver.FirefoxOptions: webdriver.Firefox}
 
 def get_calendar_info(url) -> list[str]:
-    pre_and_coreq_html = []
     driver = None
 
     for driver_options in WEBDRIVERS:
@@ -33,8 +31,7 @@ def get_calendar_info(url) -> list[str]:
 
     return scrape_calendar_page(driver)
 
-def scrape_calendar_page(driver: WebDriver) -> None:
-
+def scrape_calendar_page(driver: WebDriver) -> list[str]:
     pre_and_coreq_html = []
      # Open browser at the given url
     driver.get(url)
