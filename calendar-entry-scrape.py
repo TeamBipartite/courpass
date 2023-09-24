@@ -74,8 +74,12 @@ def parse_reqs(raw_html: str) -> PrereqTree:
     '''
     parser = BeautifulSoup(raw_html, 'html.parser')
 
-    list_tree = parser.find('li')
-    return parse_reqs_rec(list_tree) if list_tree else []
+    # grab all topmost li elements, even if they are nested within divs, etc
+    list_tree = parser.find('ul')
+    roots = [child_tag.find('li') if child_tag.name != 'li' else child_tag for child_tag in list_tree.contents] if list_tree else []
+
+    # always 'complete one of' for the top-level items?
+    return (1, [parse_reqs_rec(root) for root in roots])
 
 def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     '''
@@ -87,10 +91,16 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     title_strings = reqs_tree.strings
     req_title = next(title_strings)
 
+    if req_title == 'or permission of the department.': return (-2, None)
+
     children = reqs_tree.find('ul')
     if not children: return PrereqTree(-1, req_title)
 
-    req_num = int(next(title_strings)) if req_title == 'Complete ' else 0
+    # we can simply grab next(title_strings) here, because the cases where there
+    # is a number, the number is in its own <span> (grabbed by the call to next),
+    # but the entire 'Complete all of the following:' strings is together as
+    # one string
+    req_num = int(next(title_strings)) if 'all' not in req_title else 0
 
     results = [parse_reqs_rec(child) for child in children.contents]
     
@@ -104,8 +114,11 @@ if __name__ == '__main__':
     #url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/HJZck_TmV?q=CSC105&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computers%20and%20Information%20Processing&bcItemType=courses"
     # CASE 3: Prereqs only
     # url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1l00yY67E?q=SENG265&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=courses"
-    # CASE 4: more complicated tree
-    url ='https://www.uvic.ca/calendar/undergrad/index.php#/courses/Hkfbhda7E?q=SENG265&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=cou%20%20%20%20rses'
+    # CASE 4: more complicated trees
+    #url ='https://www.uvic.ca/calendar/undergrad/index.php#/courses/Hkfbhda7E?q=SENG265&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=cou%20%20%20%20rses'
+    url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1e06RP6XN'
+    # CASE 5: complicated coreqs
+    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HytcJuaQV?q=CSC%20361&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcIt%20%20%20%20emType=courses'
 
     # TODO: remove for loop below once implementation complete
     
@@ -116,7 +129,6 @@ if __name__ == '__main__':
         print(pre_and_coreqs[idx])
     '''
     pprint.pprint(parse_reqs(pre_and_coreqs[0]))
-    pprint.pprint(parse_reqs(''))
     # TODO: Left for testing purposes - to remove
     """
     try:
