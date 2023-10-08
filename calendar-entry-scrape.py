@@ -8,11 +8,15 @@ from bs4 import BeautifulSoup
 import pprint
 from collections import namedtuple
 
-# numReqd is an integer representing the numbeof items from the reqs_list are 
-#         required, where 0 represents 'ALL', and -1 is used to indicate a
-#         single course entry itself
-# reqs_list is a list of PrereqTrees representing the items that are requied. If
-#           num_reqd == -1, then this is a single course (Course object)
+'''
+numReqd is an integer representing the number of items from the reqs_list are 
+        required, where:
+        - 0 represents 'ALL'
+        - -1 is used to indidate a single course entry itself
+        - -2 is used to indicate 'or permission from the department'  
+reqs_list is a list of PrereqTrees representing the items that are requied. If
+          num_reqd == -1, then this is a single course (Course object)
+'''          
 PrereqTree = namedtuple('PrereqTree', ['num_reqd', 'reqs_list'])
 
 def get_calendar_info(url) -> list[str]:
@@ -101,7 +105,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     # but the entire 'Complete all of the following:' strings is together as
     # one string
     req_num = int(next(title_strings)) if 'all' not in req_title else 0
-
+    pprint.pprint(children.contents)
     results = [parse_reqs_rec(child) for child in children.contents]
     
     return PrereqTree(req_num, results)
