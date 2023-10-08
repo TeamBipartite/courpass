@@ -19,57 +19,47 @@ reqs_list is a list of PrereqTrees representing the items that are requied. If
 '''          
 PrereqTree = namedtuple('PrereqTree', ['num_reqd', 'reqs_list'])
 
-def get_calendar_info(url) -> list[str]:
-    pre_and_coreq_html = []
+WEBDRIVERS  = {webdriver.ChromeOptions: webdriver.Chrome, 
+               webdriver.EdgeOptions: webdriver.Edge,
+               webdriver.SafariOptions: webdriver.Safari,
+               webdriver.FirefoxOptions: webdriver.Firefox}
 
-    try:
-        # Attempt scrape using Chrome
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless=new") # ensure browser opens in background
-        driver = webdriver.Chrome(options = options)
-    except NoSuchDriverException:
-        # Attempt scrape using Edge
+def get_calendar_info(url) -> list[str]:
+    driver = None
+
+    for driver_options in WEBDRIVERS:
         try:
-            options = webdriver.EdgeOptions()
-            options.add_argument("--headless=new")
-            driver = webdriver.Edge(options = options)
-        except NoSuchDriverException:
-            # Attempt scrape using Safari
-            try:
-                options = webdriver.SafariOptions()
-                options.add_argument("--headless=new")
-                driver = webdriver.Safari(options = options)
-            # TODO: could technically be a different error
-            except:
-                print("Sorry, you do not have a browser that supports this application.")
-                print("Please download one of Chrome, Edge, or Safari to use this application.")
-            else:
-                scrape_calendar_page(driver, pre_and_coreq_html)
+           options = driver_options()
+           # ensure browser opens in backgound
+           options.add_argument("--headless=new")
+           driver = WEBDRIVERS[driver_options](options = options)
+           # if we get here, we found an available driver
+           break
         except Exception as e:
             # TODO: may need a better message here (maybe?)
-            print(f"{e}")
-        else:
-            scrape_calendar_page(driver, pre_and_coreq_html)
-    except Exception as e:
-        print(f"{e}")
-    else:
-        scrape_calendar_page(driver, pre_and_coreq_html)
+            if type(e) is not NoSuchDriverException:
+                print(e)
 
-    
-    return pre_and_coreq_html
+    if not driver:
+        print("Sorry, you do not have a browser that supports this application.")
+        print("Please download Chrome (or any Chrome-based browser), Edge, Safari, or Firefox to use this application.")
+        return []
 
-def scrape_calendar_page(driver: WebDriver, pre_and_coreq_html: list[str]) -> None:
+    return scrape_calendar_page(driver)
+
+def scrape_calendar_page(driver: WebDriver) -> list[str]:
+    pre_and_coreq_html = []
      # Open browser at the given url
     driver.get(url)
-    # Wait 5 seconds for the browser to load at the url
-    driver.implicitly_wait(5)
+    # Wait (up to) 10 seconds for the browser to load at the url
+    driver.implicitly_wait(10)
     # Search for <span> who has a direct child of tag <h3> containing Prerequisites or Pre- or corequisites
     cal_sections = driver.find_elements(By.XPATH, "//span[h3[contains(text(), 'Prerequisites') or contains(text(), 'Pre- or corequisites')]]")
 
     for section in cal_sections:
         pre_and_coreq_html.append(section.get_attribute("innerHTML"))
     
-    return
+    return pre_and_coreq_html
 
 def parse_reqs(raw_html: str) -> PrereqTree:
     '''
@@ -133,28 +123,3 @@ if __name__ == '__main__':
         print(pre_and_coreqs[idx])
     '''
     pprint.pprint(parse_reqs(pre_and_coreqs[0]))
-    # TODO: Left for testing purposes - to remove
-    """
-    try:
-        print("outer try block")
-        x = 5/0
-    except ZeroDivisionError:
-        print("outer except block")
-        try:
-            print("Middle try block")
-            x = 5/0
-        except ZeroDivisionError:
-            print("Middle except block")
-            try:
-                print("Inner try block")
-            except ZeroDivisionError:
-                print("Inner except block")
-            else:
-                print("Inner else block")
-        else:
-            print("Middle else block")
-    else:
-        print("outer else block")
-
-    print("After all try except blocks")
-    """
