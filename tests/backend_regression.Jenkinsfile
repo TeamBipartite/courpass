@@ -5,7 +5,9 @@ pipeline{
     stages{
         stage('Setup workspace'){
             steps {
-                sh script: 'python3 -m pip --no-input install pytest'
+                sh script: 'python3 -m pip --no-input install pytest', label: 'install pytest'
+                sh script: 'python3 -m pip --no-input install selenium', label: 'install Selenium'
+                sh script: 'python3 -m pip --no-input install beautifulsoup4', label: 'install BeautifulSoup'
             }
         }
         stage('Pytest tests'){
@@ -14,4 +16,10 @@ pipeline{
             }
         }
     }
-}    
+    post{
+        always{
+            junit 'results.xml'
+        }
+    }
+}
+
