@@ -45,9 +45,9 @@ def get_calendar_info(url) -> list[str]:
         print("Please download Chrome (or any Chrome-based browser), Edge, Safari, or Firefox to use this application.")
         return []
 
-    return scrape_calendar_page(driver)
+    return scrape_calendar_page(driver,  url)
 
-def scrape_calendar_page(driver: WebDriver) -> list[str]:
+def scrape_calendar_page(driver: WebDriver, url: str) -> list[str]:
     pre_and_coreq_html = []
      # Open browser at the given url
     driver.get(url)
