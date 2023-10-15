@@ -3,21 +3,18 @@
 {% if searched and course %}
 <br>
 <h3>You want to check if {{searched}} is a prereq of {{course}}</h3>
-<!-- 
 <table>
     <tr>
-        <th>CSC 360</th>
+        <th>Course</th>
+        <td>Is a prereq of {{searched}}?</td>
+    </tr>
+    {% for course in course_list%}
+    <tr>
+        <th><a href="">{{course}}</a></th>
         <td>YES</td>
     </tr>
-    <tr>
-        <th>CSC 225</th>
-        <td>YES</td>
-    </tr>
-    <tr>
-        <th>MATH 200</th>
-        <td>NO</td>
-    </tr>
-</table> -->
+    {% endfor %}
+</table>
 {% endif %}
 
 {% endblock %}
