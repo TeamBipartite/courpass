@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import pprint
 from collections import namedtuple
 import re
+from course import Course
 
 '''
 numReqd is an integer representing the number of items from the reqs_list are 
@@ -29,13 +30,14 @@ AWR           = -3 # Academic Writing Requirement. Empty reqs_list
 MIN_YR_STNDG  = -4 # Minimum year standing required. Year specified as an int by
                    # min_grade field
 
+WORD_TO_RANK = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5}
+
 WEBDRIVERS  = {webdriver.ChromeOptions: webdriver.Chrome, 
                webdriver.EdgeOptions: webdriver.Edge,
                webdriver.SafariOptions: webdriver.Safari,
                webdriver.FirefoxOptions: webdriver.Firefox}
 
-
-WORD_TO_RANK = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5}
+UVIC_ACADEMIC_CAL_INDEX = 'https://www.uvic.ca/calendar/undergrad/index.php'
 
 def get_calendar_info(url) -> list[str]:
     driver = None
@@ -73,6 +75,27 @@ def scrape_calendar_page(driver: WebDriver) -> list[str]:
         pre_and_coreq_html.append(section.get_attribute("innerHTML"))
     
     return pre_and_coreq_html
+
+def parse_course_link(element) -> str:
+    '''
+    Given a Tag of an 'a' element which has a link to a UVic academic calendar
+    entry (where the link is relative to the academic calendar index), extract
+    and return the (absolute) link to the course, as a string
+    '''
+    if not element: return ''
+
+    # links in the element are in the format '#/courses/view/...'
+    return UVIC_ACADEMIC_CAL_INDEX +  element['href']
+
+def split_course_code(code: str) -> (str, str):
+    '''
+    Splits course codes in forms such as 'CSC110', 'CSC 110 ', or 'CS 110' into
+    their respective department and course number components.
+    Returns: string with course department, followed by string with course num
+    '''
+    matches = re.match(r"([A-Za-z]*)\s*(\d\w*)", code)
+    return matches.groups('') if matches is not None else ('unknown', code)
+
 
 def parse_reqs(raw_html: str) -> PrereqTree:
     '''
@@ -119,8 +142,17 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
             next(title_strings)
             # here, next(title_strings) is something like 'B (73%)'
             min_grade = next(title_strings).split()[0]
+            course_desc = ''
+        else:
+            # here the next strings are:
+            # <whitespace>, - , <whitespace>, <course_desc>
+            for count in range(3): next(title_strings)
+            course_desc = next(title_strings)
 
-        return PrereqTree(SINGLE_COURSE, [req_title], min_grade, notes)
+        course_link = parse_course_link(reqs_tree.find('a', href=True))
+        course_dep, course_num = split_course_code(req_title)
+        cur_course = Course(course_dep, course_num, course_desc, {}, {}, course_link) 
+        return PrereqTree(SINGLE_COURSE, [cur_course], min_grade, notes)
 
     # for lines like 'Earn a minimum grade of /C+/ in each of the following:'
     if 'minimum grade' in req_title:
@@ -151,11 +183,11 @@ if __name__ == '__main__':
     # CASE 5: complicated coreqs
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HytcJuaQV?q=CSC%20361&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcIt%20%20%20%20emType=courses'
     # CASE 6: min grade requirements
-    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/ByxQ12d6QE'
+    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/ByxQ12d6QE'
     # CASE 7: AWR
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
     # CASE 8: min year standing
-    url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
+    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
 
     # TODO: remove for loop below once implementation complete
     
