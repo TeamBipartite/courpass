@@ -1,7 +1,16 @@
-from django.template import loader
-from django.http import HttpResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+from django.template.context_processors import csrf
 
-
+@csrf_protect
 def course_planning_tool(request):
-    template = loader.get_template("course_planning_tool_ui.html")
-    return HttpResponse(template.render())
+    c = {}
+    c.update(csrf(request))
+
+    if request.method == "POST":
+        c['searched'] = request.POST["prereq-search"]
+        c['course'] = request.POST["course"]
+
+        return render(request, "course_planning_tool_ui.html", c)
+    else:
+        return render(request, "course_planning_tool_ui.html", c)
