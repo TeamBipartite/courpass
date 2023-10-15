@@ -60,9 +60,9 @@ def get_calendar_info(url) -> list[str]:
         print("Please download Chrome (or any Chrome-based browser), Edge, Safari, or Firefox to use this application.")
         return []
 
-    return scrape_calendar_page(driver)
+    return scrape_calendar_page(driver,  url)
 
-def scrape_calendar_page(driver: WebDriver) -> list[str]:
+def scrape_calendar_page(driver: WebDriver, url: str) -> list[str]:
     pre_and_coreq_html = []
      # Open browser at the given url
     driver.get(url)
@@ -181,13 +181,13 @@ if __name__ == '__main__':
     #url ='https://www.uvic.ca/calendar/undergrad/index.php#/courses/Hkfbhda7E?q=SENG265&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=cou%20%20%20%20rses'
     #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1e06RP6XN'
     # CASE 5: complicated coreqs
-    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HytcJuaQV?q=CSC%20361&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcIt%20%20%20%20emType=courses'
+    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HytcJuaQV?q=CSC%20361&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcIt%20%20%20%20emType=courses'
     # CASE 6: min grade requirements
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/ByxQ12d6QE'
     # CASE 7: AWR
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
     # CASE 8: min year standing
-    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
+    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
 
     # TODO: remove for loop below once implementation complete
     
