@@ -9,26 +9,7 @@ import pprint
 from collections import namedtuple
 import re
 from course import Course
-
-'''
-numReqd is an integer representing the number of items from the reqs_list are 
-        required. See constants below for more details and pecial cases.
-reqs_list is a list of PrereqTrees representing the items that are required. If
-          num_reqd == -1, then this is a single course
-min_grade is a string representing a minimum grade needed, as a letter grade
-notes is a string giving space for any other special conditions on the req
-    - Currently this is only used to specify minimum year standing requirements 
-'''          
-PrereqTree = namedtuple('PrereqTree', ['num_reqd', 'reqs_list', 'min_grade', 'notes'])
-
-# Constants for num_reqd field
-ALL           =  0 # All subtrees in reqs_list
-SINGLE_COURSE = -1 # Reqs list is a single course and not a PrereqTree, (ie,
-                   # leaf of the tree
-DEPMT_PERMSN  = -2 # 'permission from the deparment' option. Empty reqs_list
-AWR           = -3 # Academic Writing Requirement. Empty reqs_list
-MIN_YR_STNDG  = -4 # Minimum year standing required. Year specified as an int by
-                   # min_grade field
+from prereqtree import PrereqTree
 
 WORD_TO_RANK = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5}
 
@@ -125,12 +106,12 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
 
     # special cases that do not follow any other format
     if req_title == 'or permission of the department.': 
-        return PrereqTree(DEPMT_PERMSN, [], None, None)
+        return PrereqTree(PreqreqTree.DEPMT_PERMSN)
     elif req_title == 'Academic Writing Requirement (AWR) satisfied':
-        return PrereqTree(AWR, [], None, None)
+        return PrereqTree(PrereqTree.AWR)
     elif '-year standing' in req_title: # for 'minimum xyz-year standing'
         year_str = re.match(r'\S*\s(\w+)-.*', req_title).group(1) 
-        return PrereqTree(MIN_YR_STNDG, [], WORD_TO_RANK[year_str], None)
+        return PrereqTree(PrereqTree.MIN_YR_STNDG, min_grade = WORD_TO_RANK[year_str])
 
     children = reqs_tree.find('ul')
     if not children:
@@ -152,7 +133,8 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
         course_link = parse_course_link(reqs_tree.find('a', href=True))
         course_dep, course_num = split_course_code(req_title)
         cur_course = Course(course_dep, course_num, course_desc, {}, {}, course_link) 
-        return PrereqTree(SINGLE_COURSE, [cur_course], min_grade, notes)
+        return PrereqTree(SINGLE_COURSE, reqs_list = [cur_course], 
+                          min_grade = min_grade, notes = notes)
 
     # for lines like 'Earn a minimum grade of /C+/ in each of the following:'
     if 'minimum grade' in req_title:
@@ -167,7 +149,8 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
                                        else ALL
     results = [parse_reqs_rec(child) for child in children.contents]
     
-    return PrereqTree(req_num, results, min_grade, notes)
+    return PrereqTree(req_num, reqs_list = results, min_grade = min_grade, 
+                               notes = notes)
 
 if __name__ == '__main__':
     # TODO: incorporate into Jenkins regression (WEBSCRAPE_0014)
@@ -185,7 +168,7 @@ if __name__ == '__main__':
     # CASE 6: min grade requirements
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/ByxQ12d6QE'
     # CASE 7: AWR
-    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
+    url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
     # CASE 8: min year standing
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
 
