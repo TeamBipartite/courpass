@@ -19,3 +19,9 @@ class Course:
         '''
         return 'Course(%r, %r, %r, %r, %r, %r)' % (self.__dep, self.__num, \
                 self.__title, self.__prereqs, self.__coreqs, self.__cal_weblink)
+
+    def __eq__(self, other):
+        # note checking reqs for now, may change later...
+        return self.__dep == other.__dep and \
+               self.__num == other.__num and \
+               self.__cal_weblink == other.__cal_weblink

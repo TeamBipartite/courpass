@@ -29,6 +29,12 @@ class PrereqTree:
         return 'PrereqTree(%s, %r, %r, %r)' % (self.__num_reqd, self.__reqs_list,
                                                self.__min_grade, self.__notes)
 
+    def __eq__(self, other):
+        return self.__num_reqd == other.__num_reqd and \
+               self.__reqs_list == other.__reqs_list and \
+               self.__min_grade == other.__min_grade and \
+               self.__notes == other.__notes
+
     def get_num_reqd(self):
         return self.__num_reqd
 
