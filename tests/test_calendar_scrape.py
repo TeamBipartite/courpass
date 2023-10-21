@@ -119,11 +119,11 @@ class TestCalendarScrape:
                                   PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PRECALC12_COURSE, None, None),
                                   PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PRNCPLES12_COURSE, None, None)
                                  ], None, None
-                                ),
-                                PrereqTree(PrereqTree.DEPMT_PERMSN, [], None, None)
-                               ]
-                              )
-                             ]
+                                )
+                               ], None, None
+                              ),
+                              PrereqTree(PrereqTree.DEPMT_PERMSN, [], None, None)
+                             ], None, None
                             )
 
 

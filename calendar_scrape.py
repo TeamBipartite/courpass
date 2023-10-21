@@ -74,7 +74,10 @@ def split_course_code(code: str) -> (str, str):
     their respective department and course number components.
     Returns: string with course department, followed by string with course num
     '''
-    matches = re.match(r"([A-Za-z]*)\s*(\d\w*)", code)
+    # search for at least 3 decimals to avoid grabbing fake 'departments' for
+    # high school level courses. Note that due to how the regex is configured,
+    # this additional parameter does not cause any slowdown in the search
+    matches = re.match(r"([A-Za-z]*)\s*(\d{3,}\w*)", code)
     return matches.groups('') if matches is not None else ('unknown', code)
 
 
@@ -106,7 +109,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
 
     # special cases that do not follow any other format
     if req_title == 'or permission of the department.': 
-        return PrereqTree(PreqreqTree.DEPMT_PERMSN)
+        return PrereqTree(PrereqTree.DEPMT_PERMSN)
     elif req_title == 'Academic Writing Requirement (AWR) satisfied':
         return PrereqTree(PrereqTree.AWR)
     elif '-year standing' in req_title: # for 'minimum xyz-year standing'
@@ -124,16 +127,19 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
             # here, next(title_strings) is something like 'B (73%)'
             min_grade = next(title_strings).split()[0]
             course_desc = ''
-        else:
+        # this sends high-school level courses to the else block    
+        elif re.search(r'\d{3,}', req_title):
             # here the next strings are:
             # <whitespace>, - , <whitespace>, <course_desc>
             for count in range(3): next(title_strings)
             course_desc = next(title_strings)
+        else:
+            course_desc = ''
 
         course_link = parse_course_link(reqs_tree.find('a', href=True))
         course_dep, course_num = split_course_code(req_title)
         cur_course = Course(course_dep, course_num, course_desc, {}, {}, course_link) 
-        return PrereqTree(SINGLE_COURSE, reqs_list = [cur_course], 
+        return PrereqTree(PrereqTree.SINGLE_COURSE, reqs_list = cur_course, 
                           min_grade = min_grade, notes = notes)
 
     # for lines like 'Earn a minimum grade of /C+/ in each of the following:'
@@ -146,7 +152,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     # but the entire 'Complete all of the following:' strings is together as
     # one string
     req_num = int(next(title_strings)) if ('all' not in req_title and 'each' not in req_title) \
-                                       else ALL
+                                       else PrereqTree.ALL
     results = [parse_reqs_rec(child) for child in children.contents]
     
     return PrereqTree(req_num, reqs_list = results, min_grade = min_grade, 
@@ -162,13 +168,13 @@ if __name__ == '__main__':
     # url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1l00yY67E?q=SENG265&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=courses"
     # CASE 4: more complicated trees
     #url ='https://www.uvic.ca/calendar/undergrad/index.php#/courses/Hkfbhda7E?q=SENG265&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=cou%20%20%20%20rses'
-    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1e06RP6XN'
+    url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1e06RP6XN'
     # CASE 5: complicated coreqs
     #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HytcJuaQV?q=CSC%20361&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcIt%20%20%20%20emType=courses'
     # CASE 6: min grade requirements
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/ByxQ12d6QE'
     # CASE 7: AWR
-    url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
+    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
     # CASE 8: min year standing
     # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
 
