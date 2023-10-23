@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By 
 from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.wait import WebDriverWait
 from bs4 import BeautifulSoup
 import pprint
 from collections import namedtuple
@@ -47,10 +48,14 @@ def scrape_calendar_page(driver: WebDriver, url: str) -> list[str]:
     pre_and_coreq_html = []
      # Open browser at the given url
     driver.get(url)
-    # Wait (up to) 10 seconds for the browser to load at the url
-    driver.implicitly_wait(10)
+    # timeout argument is required, I think we can assume no one will want to
+    # wait longer than 10 minutes
+    wait = WebDriverWait(driver, timeout=3600)
+    wait.until(lambda x: driver.find_elements(By.XPATH, "//span[h3[contains(text(), 'Description')]]") != [])
+
     # Search for <span> who has a direct child of tag <h3> containing Prerequisites or Pre- or corequisites
     cal_sections = driver.find_elements(By.XPATH, "//span[h3[contains(text(), 'Prerequisites') or contains(text(), 'Pre- or corequisites')]]")
+
 
     for section in cal_sections:
         pre_and_coreq_html.append(section.get_attribute("innerHTML"))
