@@ -6,9 +6,9 @@ from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 from bs4 import BeautifulSoup
-import pprint
 from collections import namedtuple
 import re
+import sys
 from course import Course
 from prereqtree import PrereqTree
 
@@ -164,31 +164,13 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
                                notes = notes)
 
 if __name__ == '__main__':
-    # TODO: incorporate into Jenkins regression (WEBSCRAPE_0014)
-    # CASE 1: Pre and Coreqs present
-    #url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/ryzikO6QN?q=CSC%20361&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcItemType=courses"
-    # CASE 2: No pre or coreqs
-    #url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/HJZck_TmV?q=CSC105&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computers%20and%20Information%20Processing&bcItemType=courses"
-    # CASE 3: Prereqs only
-    # url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1l00yY67E?q=SENG265&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=courses"
-    # CASE 4: more complicated trees
-    #url ='https://www.uvic.ca/calendar/undergrad/index.php#/courses/Hkfbhda7E?q=SENG265&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=cou%20%20%20%20rses'
-    url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1e06RP6XN'
-    # CASE 5: complicated coreqs
-    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HytcJuaQV?q=CSC%20361&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcIt%20%20%20%20emType=courses'
-    # CASE 6: min grade requirements
-    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/ByxQ12d6QE'
-    # CASE 7: AWR
-    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
-    # CASE 8: min year standing
-    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
+    if (len(sys.argv) != 2):
+        print("usage: %s <UVic calendar url>" % (sys.argv[0]))
+        sys.exit(1)
 
-    # TODO: remove for loop below once implementation complete
-    
-    pre_and_coreqs = get_calendar_info(url)
-    '''
-    for idx in range(len(pre_and_coreqs)):
-        print(f"pre_and_coreqs[{idx}] =")
-        print(pre_and_coreqs[idx])
-    '''
-    pprint.pprint(parse_reqs(pre_and_coreqs[0]))
+    pre_and_coreqs = get_calendar_info(sys.argv[1])
+
+    if len(pre_and_coreqs) > 0:
+        print("Prerequisites: %s" % (parse_reqs(pre_and_coreqs[0])))
+    if len(pre_and_coreqs) > 1:
+        print("Corequisites: %s" % (parse_reqs(pre_and_coreqs[1])))
