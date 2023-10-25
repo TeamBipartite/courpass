@@ -10,12 +10,11 @@ def course_planning_tool(request):
 
     course1 = Course("CSC", 225, "Algorithms and Data Structures I", {}, {}, "https://www.uvic.ca/calendar/undergrad/index.php#/courses/Bk_cy_a7V" )
     course2 = Course("MATH", 222, "Discrete Math", {}, {}, "https://www.uvic.ca/calendar/undergrad/index.php#/courses/Sye1xndp74" )
-    
-    courses = ["MATH 222", "CSC 226"]
-    """
-    TODO:
-    Use this list of Course objects once a custom tag is created
     courses = [course1, course2]
+    """
+    TODO: To remove
+    Use this to see all attributes of Course object
+    print(course1.__dir__())
     """
 
     if request.method == "POST":

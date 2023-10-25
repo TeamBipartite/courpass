@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load getattr %}
 {% block content %}
 {% if searched and course %}
 <br>
@@ -8,9 +9,11 @@
         <th>Course</th>
         <td>Is a prereq of {{searched}}?</td>
     </tr>
-    {% for course in course_list%}
+    {% for c in course_list%}
     <tr>
-        <th><a href="">{{course}}</a></th>
+        <th>
+            <a href='{{ c|getattr:"_Course__cal_weblink" }}'>{{ c|getattr:"_Course__dep"}}{{c|getattr:"_Course__num"}}</a>
+        </th>
         <td>YES</td>
     </tr>
     {% endfor %}
