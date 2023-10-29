@@ -34,6 +34,18 @@ class PrereqTree:
                self.__reqs_list == other.__reqs_list and \
                self.__min_grade == other.__min_grade and \
                self.__notes == other.__notes
+    
+    def __iter__(self):
+        # all special cases are less than SINGLE_COURSE, these are not implemented here yet
+        if (self.__num_reqd < self.__class__.SINGLE_COURSE):
+            return
+        if (self.__num_reqd == self.__class__.SINGLE_COURSE):
+            yield self.__reqs_list
+            return
+            
+        for course in self.__reqs_list:
+            for req in course:
+                yield req
 
     def get_num_reqd(self):
         return self.__num_reqd

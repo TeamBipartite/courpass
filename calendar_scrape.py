@@ -21,6 +21,16 @@ WEBDRIVERS  = {webdriver.ChromeOptions: webdriver.Chrome,
 
 UVIC_ACADEMIC_CAL_INDEX = 'https://www.uvic.ca/calendar/undergrad/index.php'
 
+def get_reqs_tuple(url: str) -> (PrereqTree, PrereqTree):
+    '''
+    Returns (prerequsite tree, coreqsuite tree) for the course at the given url.
+    If either category has no requirements, then that tree is simply None
+    '''
+    prereq_sectn_htmls = get_calendar_info(url)
+
+    return (parse_reqs(prereq_sectn_htmls[0]) if len(prereq_sectn_htmls) > 0 else None, 
+            parse_reqs(prereq_sectn_htmls[1]) if len(prereq_sectn_htmls) > 1 else None)
+
 def get_calendar_info(url) -> list[str]:
     driver = None
 
