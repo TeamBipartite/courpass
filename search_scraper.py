@@ -72,20 +72,21 @@ def assemble_prereq_grid(query_courses: list[Course],
     does stuff
     '''
     # for faster searching through these courses
-    course_to_idx = {course: idx for (idx, course) in enumerate(prereq_courses)}
+    course_to_idx = {course: idx+1 for (idx, course) in enumerate(prereq_courses)}
 
     results = []
 
     for course in query_courses:
-        cur_course_reqs = [False for idx in range(len(prereq_courses))]
+        cur_course_reqs = [False for idx in range(len(prereq_courses)+1)]
 
-#        print("COURSE %r" % (course)
+        if DEBUG: print("COURSE %r" % (course))
         for req in course.prereqs():
-            
-#            print("SEARCHING %r" % (req))
+            if DEBUG: print("SEARCHING %r" % (req))
+
             if req in prereq_courses:
                 cur_course_reqs[course_to_idx[req]] = True
-
+            else:
+                cur_course_reqs[0] = True
         results.append(cur_course_reqs)
         
     return (query_courses, prereq_courses, results)
@@ -146,7 +147,7 @@ def parse_course_info(ntdefault_entry, nttitle_entry) -> Course:
  
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("usage: %s <UVic Banner search link> <-d>" % (sys.argv[0]))
+        print("usage: %s <list of courses to search through> <list of prereqs to search for> [-d]" % (sys.argv[0]))
         sys.exit(1)
 
     if len(sys.argv) > 3 and '-d' in sys.argv[3]: DEBUG = True
@@ -154,18 +155,19 @@ if __name__ == '__main__':
     targets = sys.argv[1].split(',')
     prereqs = sys.argv[2].split(',')
     results = query_prereqs(targets, prereqs)
-#    pprint.pprint(results[:2])
 
     grid = results[2]
 
     print("Prereq of:", end='')
-    for course in results[0]:
-        print(course.get_coursecode().center(9), end='')
+    for idx,course in enumerate(results[0]):
+        print((course.get_coursecode() + ('*' if results[2][idx][0] else '')).center(9), end='')
 
     print()
     for idx,course in enumerate(results[1]):
         print("%10s" % (course.get_coursecode()), end='')
         for col in range(len(results[0])):
-            print(('✓' if results[2][col][idx] else '✗').center(9), end="")
+            print(('✓' if results[2][col][idx+1] else '✗').center(9), end="")
         print()
 
+    if any([col[0] for col in results[2]]):
+        print("----------\n*: has other prereqs not shown, see calendar for details")

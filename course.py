@@ -39,13 +39,13 @@ class Course:
         '''
         returns a generator of the Course's prereqs
         '''
-        return iter(self.__prereqs)
+        return iter(self.__prereqs) if self.__prereqs else []
 
     def coreqs(self):
         '''
         returns a generator of the Course's coreqs
         '''
-        return iter(self.__coreqs)
+        return iter(self.__coreqs) if self.__coreqs else []
 
     def get_coursecode(self):
         if (self.__dep == 'unknown'): return self.__dep
