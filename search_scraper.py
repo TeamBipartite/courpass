@@ -60,7 +60,7 @@ def parse_course_info(ntdefault_entry, nttitle_entry) -> Course:
     dep, num = course_name.strip().split(' ')
     course_title = course_title.strip()
 
-    return Course(dep, num, course_title, {}, {}, cal_link)
+    return Course(dep, num, course_title, None, None, cal_link)
   
  
 if __name__ == '__main__':
