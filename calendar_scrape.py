@@ -143,9 +143,8 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
 
         course_link = parse_course_link(reqs_tree.find('a', href=True))
         course_dep, course_num = split_course_code(req_title)
-        cur_course = Course(course_dep, course_num, course_desc, {}, {}, course_link) 
-        return PrereqTree(PrereqTree.SINGLE_COURSE, reqs_list = cur_course, 
-                          min_grade = min_grade, notes = notes)
+        cur_course = Course(course_dep, course_num, course_desc, None, None, course_link) 
+        return PrereqTree(SINGLE_COURSE, reqs_list = [cur_course], 
 
     # for lines like 'Earn a minimum grade of /C+/ in each of the following:'
     if 'minimum grade' in req_title:
