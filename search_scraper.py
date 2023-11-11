@@ -16,6 +16,12 @@ import pprint
 
 def query_prereqs(target_course_titles: list[str], prereqs_to_search_titles: list[str]) -> (list[Course], list[Course], list[list[bool]]):
     '''
+    Given a list of targest course codes to search and a list of prereq course
+    codes to search for, assemble and return  
+
+    NOTE: this function makes len(target_course_titles)*2 + 
+                              len(prereqs_to_search_titles)
+          queries to UVic servers
     '''
     target_courses = get_course_objs(target_course_titles)
     populate_reqs(target_courses)
@@ -26,13 +32,16 @@ def query_prereqs(target_course_titles: list[str], prereqs_to_search_titles: lis
     
 def get_course_objs(courses: list[str]) -> list[Course]:
     '''
+    Given a list of coursecodes, query UVic for the matching courses and return
+    a list of the corresponding Course objects. Course codes which do not match
+    a UVic course are ignored. Pre/coreqs are not queried in this function, use
+    populate_reqs function to query for pre/coreqs.    
     '''
     results = []
     for course_query in create_query(courses):
         results.extend(get_courses(course_query))
 
-    return results        
-
+    return results
 
 # TODO: does not yet implement all possible search criteria
 def get_search_url(dep: str, course_num_strt: str, course_num_end: str,
@@ -69,14 +78,19 @@ def populate_reqs(courses: list[Course]) -> None:
 def assemble_prereq_grid(query_courses: list[Course], 
                          prereq_courses: list[Course]):
     '''
-    does stuff
+    Given a list of Course objects to search and a list of Course objects
+    representing prereqs to search for, return the corresponding prereqGrid.
+    Note that the Course objects in the given query_courses must have their
+    pre/coreqs populated, but this is not necessary for the prereq_courses.
     '''
     # for faster searching through these courses
+    # add +1 to key to mind the header column in the cur_course_reqs lists
     course_to_idx = {course: idx+1 for (idx, course) in enumerate(prereq_courses)}
 
     results = []
 
     for course in query_courses:
+        # again, +1 to account for the header column
         cur_course_reqs = [False for idx in range(len(prereq_courses)+1)]
 
         if DEBUG: print("COURSE %r" % (course))
@@ -129,8 +143,6 @@ def parse_course_info(ntdefault_entry, nttitle_entry) -> Course:
     cal_link_tag  = ntdefault_entry.find('a')
 
     if DEBUG: print(ntdefault_entry)
-    # FIXME: searching for string value of Calendar on first tag works
-    #        but is a bodge and should be fixed
     cal_link = cal_link_tag['href'] if (cal_link_tag and 
                                         cal_link_tag.string == 'Calendar') else None
 
@@ -142,7 +154,7 @@ def parse_course_info(ntdefault_entry, nttitle_entry) -> Course:
     dep, num = course_name.strip().split(' ')
     course_title = course_title.strip()
 
-    return Course(dep, num, course_title, {}, {}, cal_link)
+    return Course(dep, num, course_title, None, None, cal_link)
   
  
 if __name__ == '__main__':

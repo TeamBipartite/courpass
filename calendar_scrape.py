@@ -52,7 +52,7 @@ def get_calendar_info(url) -> list[str]:
         print("Please download Chrome (or any Chrome-based browser), Edge, Safari, or Firefox to use this application.")
         return []
 
-    return scrape_calendar_page(driver,  url)
+    return scrape_calendar_page(driver, url)
 
 def scrape_calendar_page(driver: WebDriver, url: str) -> list[str]:
     pre_and_coreq_html = []
@@ -153,7 +153,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
 
         course_link = parse_course_link(reqs_tree.find('a', href=True))
         course_dep, course_num = split_course_code(req_title)
-        cur_course = Course(course_dep, course_num, course_desc, {}, {}, course_link) 
+        cur_course = Course(course_dep, course_num, course_desc, None, None, course_link) 
         return PrereqTree(PrereqTree.SINGLE_COURSE, reqs_list = cur_course, 
                           min_grade = min_grade, notes = notes)
 
