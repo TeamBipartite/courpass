@@ -4,10 +4,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By 
 from selenium.common.exceptions import NoSuchDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.wait import WebDriverWait
 from bs4 import BeautifulSoup
-import pprint
 from collections import namedtuple
 import re
+import sys
 from course import Course
 from prereqtree import PrereqTree
 
@@ -47,10 +48,14 @@ def scrape_calendar_page(driver: WebDriver, url: str) -> list[str]:
     pre_and_coreq_html = []
      # Open browser at the given url
     driver.get(url)
-    # Wait (up to) 10 seconds for the browser to load at the url
-    driver.implicitly_wait(10)
+    # timeout argument is required, I think we can assume no one will want to
+    # wait longer than 10 minutes
+    wait = WebDriverWait(driver, timeout=3600)
+    wait.until(lambda x: driver.find_elements(By.XPATH, "//span[h3[contains(text(), 'Description')]]") != [])
+
     # Search for <span> who has a direct child of tag <h3> containing Prerequisites or Pre- or corequisites
     cal_sections = driver.find_elements(By.XPATH, "//span[h3[contains(text(), 'Prerequisites') or contains(text(), 'Pre- or corequisites')]]")
+
 
     for section in cal_sections:
         pre_and_coreq_html.append(section.get_attribute("innerHTML"))
@@ -74,7 +79,10 @@ def split_course_code(code: str) -> (str, str):
     their respective department and course number components.
     Returns: string with course department, followed by string with course num
     '''
-    matches = re.match(r"([A-Za-z]*)\s*(\d\w*)", code)
+    # search for at least 3 decimals to avoid grabbing fake 'departments' for
+    # high school level courses. Note that due to how the regex is configured,
+    # this additional parameter does not cause any slowdown in the search
+    matches = re.match(r"([A-Za-z]*)\s*(\d{3,}\w*)", code)
     return matches.groups('') if matches is not None else ('unknown', code)
 
 
@@ -106,7 +114,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
 
     # special cases that do not follow any other format
     if req_title == 'or permission of the department.': 
-        return PrereqTree(PreqreqTree.DEPMT_PERMSN)
+        return PrereqTree(PrereqTree.DEPMT_PERMSN)
     elif req_title == 'Academic Writing Requirement (AWR) satisfied':
         return PrereqTree(PrereqTree.AWR)
     elif '-year standing' in req_title: # for 'minimum xyz-year standing'
@@ -124,17 +132,20 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
             # here, next(title_strings) is something like 'B (73%)'
             min_grade = next(title_strings).split()[0]
             course_desc = ''
-        else:
+        # this sends high-school level courses to the else block    
+        elif re.search(r'\d{3,}', req_title):
             # here the next strings are:
             # <whitespace>, - , <whitespace>, <course_desc>
             for count in range(3): next(title_strings)
             course_desc = next(title_strings)
+        else:
+            course_desc = ''
 
         course_link = parse_course_link(reqs_tree.find('a', href=True))
         course_dep, course_num = split_course_code(req_title)
         cur_course = Course(course_dep, course_num, course_desc, None, None, course_link) 
-        return PrereqTree(SINGLE_COURSE, reqs_list = [cur_course], 
-                          min_grade = min_grade, notes = notes)
+        return PrereqTree(PrereqTree.SINGLE_COURSE, reqs_list = cur_course, 
+                          min_grade = min_grade, notes = notes)        
 
     # for lines like 'Earn a minimum grade of /C+/ in each of the following:'
     if 'minimum grade' in req_title:
@@ -146,38 +157,20 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     # but the entire 'Complete all of the following:' strings is together as
     # one string
     req_num = int(next(title_strings)) if ('all' not in req_title and 'each' not in req_title) \
-                                       else ALL
+                                       else PrereqTree.ALL
     results = [parse_reqs_rec(child) for child in children.contents]
     
     return PrereqTree(req_num, reqs_list = results, min_grade = min_grade, 
                                notes = notes)
 
 if __name__ == '__main__':
-    # TODO: incorporate into Jenkins regression (WEBSCRAPE_0014)
-    # CASE 1: Pre and Coreqs present
-    #url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/ryzikO6QN?q=CSC%20361&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcItemType=courses"
-    # CASE 2: No pre or coreqs
-    #url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/HJZck_TmV?q=CSC105&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computers%20and%20Information%20Processing&bcItemType=courses"
-    # CASE 3: Prereqs only
-    # url = "https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1l00yY67E?q=SENG265&&limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=courses"
-    # CASE 4: more complicated trees
-    #url ='https://www.uvic.ca/calendar/undergrad/index.php#/courses/Hkfbhda7E?q=SENG265&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Software%20Development%20Methods&bcItemType=cou%20%20%20%20rses'
-    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1e06RP6XN'
-    # CASE 5: complicated coreqs
-    #url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HytcJuaQV?q=CSC%20361&&%20%20%20%20limit=20&skip=0&bc=true&bcCurrent=&bcCurrent=Computer%20Communications%20and%20Networks&bcIt%20%20%20%20emType=courses'
-    # CASE 6: min grade requirements
-    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/ByxQ12d6QE'
-    # CASE 7: AWR
-    url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/r1rPrjq_t?q=CSC%20361'
-    # CASE 8: min year standing
-    # url = 'https://www.uvic.ca/calendar/undergrad/index.php#/courses/HyeHjkO674'
+    if (len(sys.argv) != 2):
+        print("usage: %s <UVic calendar url>" % (sys.argv[0]))
+        sys.exit(1)
 
-    # TODO: remove for loop below once implementation complete
-    
-    pre_and_coreqs = get_calendar_info(url)
-    '''
-    for idx in range(len(pre_and_coreqs)):
-        print(f"pre_and_coreqs[{idx}] =")
-        print(pre_and_coreqs[idx])
-    '''
-    pprint.pprint(parse_reqs(pre_and_coreqs[0]))
+    pre_and_coreqs = get_calendar_info(sys.argv[1])
+
+    if len(pre_and_coreqs) > 0:
+        print("Prerequisites: %s" % (parse_reqs(pre_and_coreqs[0])))
+    if len(pre_and_coreqs) > 1:
+        print("Corequisites: %s" % (parse_reqs(pre_and_coreqs[1])))
