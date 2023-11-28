@@ -30,12 +30,22 @@ class PrereqTree:
                                                self.__min_grade, self.__notes)
 
     def __eq__(self, other):
+        if type(self) != type(other):
+            return False
         return self.__num_reqd == other.__num_reqd and \
                self.__reqs_list == other.__reqs_list and \
                self.__min_grade == other.__min_grade and \
                self.__notes == other.__notes
-    
+
     def __iter__(self):
+        return iter(self.__reqs_list)
+
+    def __hash__(self):
+        # should work because reqs_list cannot be mutated after the object is
+        # created
+        return hash('%d%s' % (self.__num_reqd, self.__reqs_list))
+    
+    def get_all_prereq_courses(self):
         # all special cases are less than SINGLE_COURSE, these are not implemented here yet
         if (self.__num_reqd < self.__class__.SINGLE_COURSE):
             return
@@ -47,7 +57,11 @@ class PrereqTree:
             for req in course:
                 yield req
 
+    # DEPRECATED: not reccommended to use
     def get_num_reqd(self):
+        return self.__num_reqd
+
+    def get_type(self):
         return self.__num_reqd
 
     def get_reqs_list(self):

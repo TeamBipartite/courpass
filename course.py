@@ -25,7 +25,9 @@ class Course:
     def __eq__(self, other):
         # note checking reqs for now, may change later...
         return self.__dep == other.__dep and \
-               self.__num == other.__num 
+               self.__num == other.__num if \
+               type(other) == type(self) else False
+               # use type(self) as an alias for Course here
                # it turns out the calendar weblinks are not unique, so not
                # checking in equality check here..
 #               self.__cal_weblink == other.__cal_weblink

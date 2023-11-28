@@ -6,22 +6,6 @@ import urllib.request
 
 CURRENT_TERM = '202309'
 
-def query_prereqs(target_course_titles: list[str], prereqs_to_search_titles: list[str]) -> (list[Course], list[Course], list[list[bool]]):
-    ''
-    Given a list of targest course codes to search and a list of prereq course
-    codes to search for, assemble and return  
-
-    NOTE: this function makes len(target_course_titles)*2 + 
-                              len(prereqs_to_search_titles)
-          queries to UVic servers
-    ''
-    target_courses = get_course_objs(target_course_titles)
-    populate_reqs(target_courses)
-
-    prereqs_to_search = get_course_objs(prereqs_to_search_titles)
-
-    return assemble_prereq_grid(target_courses, prereqs_to_search)            
-    
 def get_course_objs(courses: list[str]) -> list[Course]:
     '''
     Given a list of coursecodes, query UVic for the matching courses and return
