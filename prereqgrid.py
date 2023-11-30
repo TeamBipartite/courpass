@@ -38,34 +38,22 @@ class PrereqGrid:
         self.__num_groups = 0
 
         for course in self.__target_courses:
-            # again, +1 to account for the header column
             cur_course_reqs  = [None for idx in range(len(self.__query_courses))]
-            cur_course_notes = ''
-            #if .get_num_reqd() == PrereqTree.MIN_YR_STNDG:
-            #    cur_course_reqs[0] += req.get_num_reqd()
 
             if __debug__: print("COURSE %r" % (course))
-            cur_course_notes += self.__parse_prereq_tree(cur_course_reqs, course.prereqs(), course_to_idx=course_to_idx)
-            #for req_tree in course.prereqs():
-                #cur_course_notes += self.__parse_prereq_tree(cur_course_reqs, req_tree, course_to_idx=course_to_idx)
-            '''
-            if __debug__: print("SEARCHING %r" % (req))
-
-            if req in self.__query_courses:
-                cur_course_reqs[course_to_idx[req]] = True
-            else:
-                cur_course_notes = '*'
-            '''
+            _, _, cur_course_notes= self.__parse_prereq_tree(cur_course_reqs, course.prereqs(), course_to_idx=course_to_idx)
             self.__grid.append(cur_course_reqs)
             self.__header_row.append(cur_course_notes)
 
     def __parse_prereq_tree(self, course_reqs, req_tree, parent_group = 'ROOT', course_to_idx = None, course_header = ''):
         '''
         '''
-        #course_header = ''
         if course_to_idx == None:
             course_to_idx = {course: idx for (idx, course) in enumerate(self.__query_courses)}
             if __debug__: print("INITALIZING COURSE_TO_IDX: %s" % (course_to_idx))
+
+        found_course_in_group = found_course_not_in_group = found_in_group_below \
+                              = found_notin_below = False
 
         for sub_tree in req_tree:
             if __debug__: print("SEARCHING %r" % (sub_tree))
@@ -78,17 +66,21 @@ class PrereqGrid:
             elif tree_type == PrereqTree.SINGLE_COURSE:
                 req = sub_tree.get_reqs_list()
                 if req in self.__query_courses:
-                    if parent_group not in self.__groups:
-                        self.__groups[parent_group] = True
+                    found_course_in_group = True
                     course_reqs[course_to_idx[req]] = parent_group
                 elif type(parent_group) != str and parent_group in self.__groups:
-                    self.__groups[parent_group] = False
+                    found_course_not_in_group = True
                 elif '*' not in course_header:
                     course_header += '*'
             elif tree_type >= PrereqTree.ALL:
-                course_header = self.__parse_prereq_tree(course_reqs, sub_tree, parent_group=sub_tree if tree_type > PrereqTree.ALL else parent_group, course_to_idx=course_to_idx, course_header=course_header)
+                found_in_group_below, found_notin_below, course_header = self.__parse_prereq_tree(course_reqs, sub_tree, parent_group=sub_tree if tree_type > PrereqTree.ALL else parent_group, course_to_idx=course_to_idx, course_header=course_header)
                 
-        return course_header
+        found_course_in_group = any([found_course_in_group, found_in_group_below])
+        found_course_not_in_group = any([found_course_not_in_group, found_notin_below])
+
+        if found_course_in_group:
+            self.__groups[parent_group] = not found_course_not_in_group
+        return found_course_in_group, found_course_not_in_group, course_header
 
     def html_grid(self) -> str:
         '''
@@ -99,7 +91,7 @@ class PrereqGrid:
 
     def print_grid(self, width: int = 10) -> str:
         group_to_num = {group: idx for idx, group in enumerate(self.__groups.keys()) if type(group) != str}
-        result = "Prereq of: "
+        result = ("%" + "%ds" % (width+1)) % ("Prereq of:")
         for idx,course in enumerate(self.__target_courses):
             result += (course.get_coursecode() + self.__header_row[idx]).center(width)
 
@@ -113,20 +105,24 @@ class PrereqGrid:
                     result += ('✓'+TO_SUPERSCRIPT[group_to_num[self.__grid[col][idx]]%10]).center(width)
                 else:
                     result += '✓'.center(width)
-                #result += (('✓'+TO_SUPERSCRIPT[self.__grid[col][idx]%10] if self.__grid[col][idx] != 0 else '✓') if self.__grid[col][idx] else '✗').center(width)
             result += "\n" 
 
         if any(self.__header_row):
-            result += "----------\n"
-            result += "*    : has other prereqs not shown, see calendar for details\n"
-            result += "+    : Or department permission\n"
-            result += "[%s-%s]: Minimum year requried.\n" % (TO_SUPERSCRIPT[1],
-                                                           TO_SUPERSCRIPT[5])
+            result += "-----------\nHeader legend:\n"
+            result += "%10s:" % (''.join(TO_SUPERSCRIPT.values())) \
+                      + " Minimum year required.\n"
+        if any(['*' in header for header in self.__header_row]):
+            result += "%10s:" % ('*') + " Not all prereqs shown. See calendar for details.\n"
+        if any(['+' in header for header in self.__header_row]):
+            result += "%10s:" % ('+') + " Or department permission.\n"
+
+        result +=  '----------\nGrid legend:\n' if len(self.__groups.keys()) > 1 else ''
         for group in [group for group in self.__groups if type(group) != str]:
             group_num = group_to_num[group]
             group_num_reqd = group.get_num_reqd()
-            result += 'Group %d: Any %d of these.' % (group_num, group_num_reqd)
+            result += '%10s:' % ('Group %d' % (group_num)) + ' Any %d of these.' % (group_num_reqd)
             if not self.__groups[group]:
                 result += ' Not all courses in this group shown. See calendar for details.'
             result += '\n'
-        return result
+
+        return result.rstrip('\n')
