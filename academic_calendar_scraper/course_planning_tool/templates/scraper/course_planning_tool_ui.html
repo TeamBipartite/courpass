@@ -1,0 +1,48 @@
+{% extends "../base/base.html" %}
+{% load getattr %}
+
+{% block template %}
+{% include "../base/navbar.html" %}
+<div class="container">
+    <form method="post" action={% url 'course_planning_tool' %}>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="prereq-search" class="form-label">Prerequisite:</label>
+            <input type="search" name="prereq-search" class="form-control" id="exampleInputEmail1"
+                aria-describedby="emailHelp">
+        </div>
+        <div class="mb-3">
+            <label for="course" class="form-label">Course:</label>
+            <input type="search" name="course" class="form-control" id="exampleInputEmail1"
+                aria-describedby="emailHelp">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    {% if searched and course %}
+    <br>
+    <h3>You want to check if {{searched}} is a prereq of {{course}}</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Course</th>
+                <th scope="col">Is prereq?</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in course_list%}
+            <tr>
+                <th scope="row">
+                    <a href='{{ c|getattr:"_Course__cal_weblink" }}'
+                        target="_blank">{{c|getattr:"_Course__dep"}}{{c|getattr:"_Course__num"}}</a>
+                </th>
+                <td>YES</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

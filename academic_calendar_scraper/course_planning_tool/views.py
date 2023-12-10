@@ -22,6 +22,10 @@ def course_planning_tool(request):
         c['course'] = request.POST["course"]
         c['course_list'] = courses
 
-        return render(request, "course_planning_tool_ui.html", c)
+        return render(request, "./scraper/course_planning_tool_ui.html", c)
     else:
-        return render(request, "course_planning_tool_ui.html", c)
+        return render(request, "./scraper/course_planning_tool_ui.html", c)
+
+
+def home(request):
+    return render(request, "./scraper/home.html", {})
