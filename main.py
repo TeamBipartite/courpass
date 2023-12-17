@@ -12,4 +12,6 @@ if __name__ == '__main__':
     prereqs = sys.argv[2].split(',')
     grid = PrereqGrid(targets, prereqs)
     print(grid)
-
+    if __debug__:
+        print(grid.get_query_courses())
+        print(grid.get_grid_data())
