@@ -123,7 +123,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     notes     = None
 
     # special cases that do not follow any other format
-    if req_title == 'or permission of the department.': 
+    if 'permission of the department.' in req_title: 
         return PrereqTree(PrereqTree.DEPMT_PERMSN)
     elif req_title == 'Academic Writing Requirement (AWR) satisfied':
         return PrereqTree(PrereqTree.AWR)

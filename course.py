@@ -22,6 +22,9 @@ class Course:
         return 'Course(%r, %r, %r, %r, %r, %r)' % (self.__dep, self.__num, \
                 self.__title, self.__prereqs, self.__coreqs, self.__cal_weblink)
 
+    def __str__(self):
+        return repr(self)
+
     def __eq__(self, other):
         # note checking reqs for now, may change later...
         return self.__dep == other.__dep and \

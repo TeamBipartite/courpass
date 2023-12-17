@@ -16,18 +16,20 @@ where `LIST_OF_COURSES_TO_SEARCH` and `LIST_OF_PREREQS_TO_FIND` are comma-separa
 
 ```bash
 $ python3 -O main.py CSC360,CSC361,CSC370,CSC421 CSC226,SENG265,CSC230
- Prereq of: CSC360*    CSC361   CSC370*   CSC421⁴
-     CSC226    ✗         ✗         ✗         ✓
-    SENG265    ✓         ✓         ✓         ✗
-     CSC230    ✓¹        ✓¹        ✗         ✗
-     ECE255    ✓¹        ✓¹        ✗         ✗
+Prereq of: CSC360*    CSC361   CSC370*   CSC421⁴   MATH100*+ 
+    CSC226    ✗         ✗         ✗         ✓         ✗     
+   SENG265    ✓         ✓         ✓         ✗         ✗     
+    CSC230    ✓¹        ✓¹        ✗         ✗         ✗     
+    ECE255    ✓¹        ✓¹        ✗         ✗         ✗     
 -----------
 Header legend:
-⁰¹²³⁴⁵⁶⁷⁸⁹: Minimum year required.
-         *: Not all prereqs shown. See calendar for details.
-----------
+     ²³⁴⁵: Minimum year standing required.
+        *: Not all prereqs shown. See calendar for details.
+        +: Or department permission.
+-----------
 Grid legend:
-   Group 1: Any 1 of these. Not all courses in this group shown. See calendar for details.
+  Group 1: Any 1 of these. Not all courses in this group shown. See calendar for details.
 ```
 
 To enable debuging output, remove the `-O` argument from the launch command.
+
