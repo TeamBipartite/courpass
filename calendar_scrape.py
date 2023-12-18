@@ -21,6 +21,16 @@ WEBDRIVERS  = {webdriver.ChromeOptions: webdriver.Chrome,
 
 UVIC_ACADEMIC_CAL_INDEX = 'https://www.uvic.ca/calendar/undergrad/index.php'
 
+def get_reqs_tuple(url: str) -> (PrereqTree, PrereqTree):
+    '''
+    Returns (prerequsite tree, coreqsuite tree) for the course at the given url.
+    If either category has no requirements, then that tree is simply None
+    '''
+    prereq_sectn_htmls = get_calendar_info(url)
+
+    return (parse_reqs(prereq_sectn_htmls[0]) if len(prereq_sectn_htmls) > 0 else None, 
+            parse_reqs(prereq_sectn_htmls[1]) if len(prereq_sectn_htmls) > 1 else None)
+
 def get_calendar_info(url) -> list[str]:
     driver = None
 
@@ -42,7 +52,7 @@ def get_calendar_info(url) -> list[str]:
         print("Please download Chrome (or any Chrome-based browser), Edge, Safari, or Firefox to use this application.")
         return []
 
-    return scrape_calendar_page(driver,  url)
+    return scrape_calendar_page(driver, url)
 
 def scrape_calendar_page(driver: WebDriver, url: str) -> list[str]:
     pre_and_coreq_html = []
@@ -113,7 +123,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     notes     = None
 
     # special cases that do not follow any other format
-    if req_title == 'or permission of the department.': 
+    if 'permission of the department.' in req_title: 
         return PrereqTree(PrereqTree.DEPMT_PERMSN)
     elif req_title == 'Academic Writing Requirement (AWR) satisfied':
         return PrereqTree(PrereqTree.AWR)

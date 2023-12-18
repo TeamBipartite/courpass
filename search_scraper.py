@@ -1,13 +1,56 @@
-#! /bin/env python3
-
 from course import Course
+from prereqtree import PrereqTree
 from bs4 import BeautifulSoup
+import calendar_scrape
 import urllib.request
 
-#NOTE: only needed for cli interactive functionality
-DEBUG = False
-import sys
-import pprint
+CURRENT_TERM = '202309'
+
+def get_course_objs(courses: list[str]) -> list[Course]:
+    '''
+    Given a list of coursecodes, query UVic for the matching courses and return
+    a list of the corresponding Course objects. Course codes which do not match
+    a UVic course are ignored. Pre/coreqs are not queried in this function, use
+    populate_reqs function to query for pre/coreqs.    
+    '''
+    results = []
+    for course_query in create_query(courses):
+        results.extend(get_courses(course_query))
+
+    return results
+
+# TODO: does not yet implement all possible search criteria
+def get_search_url(dep: str, course_num_strt: str, course_num_end: str,
+                   term: str = CURRENT_TERM) -> str:
+    '''
+    Creates a UVic banner search URL for the course with the given information
+    '''
+    return ( 'https://www.uvic.ca/BAN1P/bwckctlg.p_display_courses?term_in=%s'
+           + '&one_subj=%s&sel_crse_strt=%s&sel_crse_end=%s&sel_subj=' 
+           + '&sel_levl=&sel_schd=&sel_coll=&sel_divs=&sel_dept=&sel_attr=') \
+           % (term, dep, course_num_strt, course_num_end)
+
+def create_query(course_titles: list[str], term: str = CURRENT_TERM) -> list[str]:
+    '''
+    Creates a UVic banner search URL for each course title in the given list of
+    course_titles, returning the results in a list.
+    '''
+    results = []
+
+    for course_title in course_titles:
+        course_dep, course_num = calendar_scrape.split_course_code(course_title)
+        results.append(get_search_url(course_dep, course_num, course_num, term))
+
+    return results
+
+def populate_reqs(courses: list[Course]) -> None:
+    '''
+    Mutate the given list of Courses to fill in their prerequsite information
+    '''
+    for course in courses:
+        course_reqs = calendar_scrape.get_reqs_tuple(course.get_cal_weblink())
+        course.set_reqs(*course_reqs)
+
 
 def get_courses(href: str) -> list[Course]:
     '''
@@ -46,9 +89,7 @@ def parse_course_info(ntdefault_entry, nttitle_entry) -> Course:
     '''
     cal_link_tag  = ntdefault_entry.find('a')
 
-    if DEBUG: print(ntdefault_entry)
-    # FIXME: searching for string value of Calendar on first tag works
-    #        but is a bodge and should be fixed
+    if __debug__: print(ntdefault_entry)
     cal_link = cal_link_tag['href'] if (cal_link_tag and 
                                         cal_link_tag.string == 'Calendar') else None
 
@@ -63,12 +104,3 @@ def parse_course_info(ntdefault_entry, nttitle_entry) -> Course:
     return Course(dep, num, course_title, None, None, cal_link)
   
  
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print("usage: %s <UVic Banner search link> <-d>" % (sys.argv[0]))
-        sys.exit(1)
-
-    if len(sys.argv) > 2 and '-d' in sys.argv[2]: DEBUG = True
-
-    results = get_courses(sys.argv[1])
-    pprint.pprint(results)
