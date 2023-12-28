@@ -2,8 +2,14 @@
 [![Build Status](https://www.johnnyw.ca/jenkins/buildStatus/icon?job=academic-calendar-scraper%2Fcalendar-scrape-regression%2Fmain)](https://www.johnnyw.ca/jenkins/job/academic-calendar-scraper/job/calendar-scrape-regression/job/main/)
 
 ## Django webserver
+To launch the Django server for local development, navigate to the academic_calendar_scraper/academic_calendar_scraper directory. You can verify you are in the correct directory by ensuring there is a file called manage.py. From there, you can run the following command:
+```
+$ python manage.py runserver
+```
 
-(in development)
+The above command with output some status information. You will likely see a message regarding "18 unapplied migration(s)," as mentioned in the docs [here](https://docs.djangoproject.com/en/4.2/intro/tutorial01/); they can be ignored at this time.
+
+You will find the server running [here](http://127.0.0.1:8000/); note, the local development url is also given as part of the above command's output.
 
 ## Command-line usage
 
