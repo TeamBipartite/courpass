@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'course_planning_tool'
+    'course_planning_tool',
+    'fontawesomefree'
 ]
 
 MIDDLEWARE = [
@@ -124,4 +125,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Look for static folder in course_planning_tool dir 
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "course_planning_tool/static"]

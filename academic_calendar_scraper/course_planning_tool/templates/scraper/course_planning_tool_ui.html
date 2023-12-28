@@ -1,5 +1,5 @@
 {% extends "../base/base.html" %}
-{% load getattr %}
+{% load getattr index%}
 
 {% block template %}
 {% include "../base/navbar.html" %}
@@ -12,36 +12,89 @@
                 aria-describedby="emailHelp">
         </div>
         <div class="mb-3">
-            <label for="course" class="form-label">Course:</label>
+            <label for="course" class="form-label"
+                title="Enter a comma separated list of courses (e.g. CSC110, SENG265)">Courses:</label>
+            <i class="fa-solid fa-circle-info"
+                title="Enter a comma separated list of courses (e.g. CSC110, SENG265)"></i>
             <input type="search" name="course" class="form-control" id="exampleInputEmail1"
                 aria-describedby="emailHelp">
         </div>
-
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 
     {% if searched and course %}
     <br>
-    <h3>You want to check if {{searched}} is a prereq of {{course}}</h3>
+    <h3>TODO: add search history here!</h3>
     <table class="table">
         <thead>
             <tr>
-                <th scope="col">Course</th>
-                <th scope="col">Is prereq?</th>
+                <th scope="col">Prereq of:</th>
+                {% for course, all_shown, dept_perm, min_year in query_courses %}
+                <th scope="col" class="text-center">
+                    <a href='{{ course|getattr:"_Course__cal_weblink" }}'
+                        target="_blank">{{course|getattr:"_Course__dep"}}{{course|getattr:"_Course__num"}}</a>
+                    {% if min_year >= 2 %}
+                    <sup>{{min_year}}</sup>
+                    {% endif %}
+                    {% if not all_shown %}
+                    <i class="fa-solid fa-eye-slash"></i>
+                    {% endif %}
+                    {% if dept_perm %}
+                    <i class="fa-solid fa-file-signature"></i>
+                    {% endif %}
+                </th>
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
-            {% for c in course_list%}
+            {% for row in grid_data%}
             <tr>
                 <th scope="row">
-                    <a href='{{ c|getattr:"_Course__cal_weblink" }}'
-                        target="_blank">{{c|getattr:"_Course__dep"}}{{c|getattr:"_Course__num"}}</a>
+                    <a href='{{ prereq_courses|index:forloop.counter0|getattr:"_Course__cal_weblink" }}'
+                        target="_blank">{{prereq_courses|index:forloop.counter0|getattr:"_Course__dep"}}{{prereq_courses|index:forloop.counter0|getattr:"_Course__num"}}</a>
                 </th>
-                <td>YES</td>
+                {% for is_prereq, is_coreq, group_key in row %}
+                <td scope="row" class="text-center">
+                    {% if is_prereq %}
+                    <i class="fa-solid fa-check"></i>
+                    {% elif is_coreq %}
+                    <i class="fa-solid fa-code-branch"></i>
+                    {% else %}
+                    <i class="fa-solid fa-xmark"></i>
+                    {% endif %}
+                    <sup>{{group_key}}</sup>
+                </td>
+                {% endfor %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% if header_legend %}
+    <span>Header Legend</span>
+    <table>
+        <tbody>
+            {% for header_item in header_legend %}
+            <tr>
+                {% autoescape off %}
+                <td scope="row">
+                    {{header_item|index:0}}
+                </td>
+                <td scope="row">
+                    {{header_item|index:1}}
+                </td>
+                {% endautoescape %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if group_info %}
+    <span>Group Legend</span>
+    {% autoescape off %}
+    {{group_info}}
+    {% endautoescape %}
+    {% endif %}
 </div>
 {% endif %}
 
