@@ -66,7 +66,6 @@ def scrape_calendar_page(driver: WebDriver, url: str) -> list[str]:
     # Search for <span> who has a direct child of tag <h3> containing Prerequisites or Pre- or corequisites
     cal_sections = driver.find_elements(By.XPATH, "//span[h3[contains(text(), 'Prerequisites') or contains(text(), 'Pre- or corequisites')]]")
 
-
     for section in cal_sections:
         pre_and_coreq_html.append(section.get_attribute("innerHTML"))
     
@@ -96,7 +95,7 @@ def split_course_code(code: str) -> (str, str):
     return matches.groups('') if matches is not None else ('unknown', code)
 
 
-def parse_reqs(raw_html: str) -> PrereqTree:
+def parse_reqs(raw_html: str, is_coreq = False) -> PrereqTree:
     '''
     Parse raw html representing a Pre/Coreq list from a UVic
     acadmeic calendar webpage, returning a PrereqTree with the data represented

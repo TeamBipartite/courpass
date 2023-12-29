@@ -1,6 +1,7 @@
 from course import Course
 from prereqtree import PrereqTree
 import search_scraper
+import itertools
 
 # unicode superscirpt string versions of the keys
 TO_SUPERSCRIPT = {0: '\u2070', 1: '\u00B9', 2: '\u00B2', 3: '\u00B3', 4: '\u2074',
@@ -17,14 +18,22 @@ class PrereqGrid:
     CH_MIN_YR_STNDG = 3
     
     # grid data tuple definitions
-    GridData = tuple[bool, int]
+    GridData = tuple[bool, bool, list[int]]
     GD_IS_PREREQ = 0
-    GD_GROUP_NUM = 1
+    GD_IS_COREQ  = 1
+    GD_GROUP_KEY = 2
 
     # group info tuple definitions
-    GroupInfo = tuple[int, bool]
+    GroupInfo = tuple[int, bool, str, list['GroupInfo']]
     GI_NUM_REQD  = 0
     GI_ALL_SHOWN = 1
+    GI_MIN_GRADE = 2
+    GI_SUBGROUPS = 3
+
+    # internal expanded group info to help creating group info tuples
+    GroupInfoInternal = tuple[int, bool, str, list[tuple], bool]
+    GI_ANY_NOT_SHOWN  = 4
+    GI_TARGETS        = 5
 
     def __init__(self, target_coursecodes: list[str], prereqs_to_search: list[str]):
         self.__target_courses = search_scraper.get_course_objs(target_coursecodes)
@@ -32,7 +41,29 @@ class PrereqGrid:
 
         self.__query_courses = search_scraper.get_course_objs(prereqs_to_search)
 
-        self.__assemble_prereq_grid() 
+        self.__assemble_prereq_grid()
+
+    #def __init__(self, prefetched_courses: tuple[list[Course], list[Course]]):
+    #    self.__target_courses, self.__query_courses = prefetched_courses
+
+    #    self.__assemble_prereq_grid()
+    
+    #def __init__(self, fname: str):
+    #    fp = open(fname)
+    #    target_str, query_str = fp.read().strip().split("\n")
+
+    #    confirm = input("TARGET_COURSES: %s. Confirm? " % target_str)
+    #    if confirm.lower() != "y":
+    #        exit()
+
+    #    self.__target_courses = eval(target_str)
+
+    #    confirm = input("QUERY_COURSES: %s. Confirm? " % query_str)
+    #    if confirm.lower() != "y":
+    #        exit()
+
+    #    self.__query_courses = eval(query_str) 
+    #    self.__assemble_prereq_grid()
 
     def __str__(self) -> str:
         return self.text_grid()
@@ -47,29 +78,74 @@ class PrereqGrid:
         self.__grid = []
         self.__header_row = []
         self.__groups = {}
+        self.__groups_list = [(PrereqTree.ALL, True, '', [], False, [])]
 
-        for course in self.__target_courses:
+
+        for idx, course in enumerate(self.__target_courses):
             cur_course_reqs  = [None for idx in range(len(self.__query_courses))]
 
             if __debug__: print("COURSE %r" % (course))
-            _, _, cur_course_notes= self.__parse_prereq_tree(cur_course_reqs, course.prereqs(), \
+            _, _, cur_course_notes= self.__parse_prereq_tree(idx, course.prereqs_tree(), \
                                                              course_header = [course, True, False, 0])
             self.__grid.append(cur_course_reqs)
             self.__header_row.append(tuple(cur_course_notes))
 
-        self.__group_to_num = {}
-        self.__groups_list = [(PrereqTree.ALL, True)]
-        group_num = 1
-        for group in self.__groups.keys():
-            if group.get_num_reqd() != PrereqTree.ALL:
-                self.__group_to_num[group] = group_num
-                self.__groups_list.append( (group.get_num_reqd(), self.__groups[group]) )
-                group_num += 1
+        # now we have to sort out the nested groups - specifically, sort out
+        # where we need to create single-course groups for nested groups
+        if __debug__: print("BEFORE AUGMENTING:", self.__groups_list)
+        self.__create_singleton_groups(self.__groups_list)
 
-    def __parse_prereq_tree(self, course_reqs: list[PrereqTree], req_tree: PrereqTree,
-                            parent_group: PrereqTree = PrereqTree(num_reqd = PrereqTree.ALL),
+        # we haven't actually filled in the grid at this point, just set up the
+        # appripiete targets in the groups, so we need to fil in the group keys
+        # in the grid now
+        self.__fill_group_nums(self.__groups_list, [])
+
+        # delete temp data from groups list
+        self.__cleanup_init_data(self.__groups_list)
+        #self.__groups_list = [group[:4] for group in self.__groups_list] 
+
+        #self.__group_to_num = {}
+        #self.__groups_list = [(PrereqTree.ALL, True)]
+        #group_num = 1
+        #for group in self.__groups.keys():
+        #    if group.get_num_reqd() != PrereqTree.ALL:
+        #        self.__group_to_num[group] = group_num
+        #        self.__groups_list.append( (group.get_num_reqd(), self.__groups[group]) )
+        #        group_num += 1
+
+    def __cleanup_init_data(self, groups_list):
+        for idx, group in enumerate(groups_list):
+            groups_list[idx] = tuple(group[:4])
+            self.__cleanup_init_data(group[type(self).GI_SUBGROUPS])
+
+    def __fill_group_nums(self, groups_list, parent_group_key):
+        for idx, group in enumerate(groups_list):
+            cur_group_key = parent_group_key + [idx]
+            for req, course in group[type(self).GI_TARGETS]:
+               self.__grid[course][req] = cur_group_key
+            self.__fill_group_nums(group[type(self).GI_SUBGROUPS], cur_group_key)
+
+    def __create_singleton_groups(self, groups_list):
+        for group in groups_list:
+            if len(group[type(self).GI_SUBGROUPS]) > 0 and len(group[type(self).GI_TARGETS]) > 0:
+                for target in group[type(self).GI_TARGETS]:
+                    group[type(self).GI_SUBGROUPS].append( (PrereqTree.ALL, True, '', [], False, target) )
+                group[type(self).GI_TARGETS] = []
+            self.__create_singleton_groups(group[type(self).GI_SUBGROUPS])
+
+    def countif(self, lst, fn):
+        count = 0 
+        for item in lst:
+            if fn(item):
+                count += 1
+        return count
+
+
+    def __parse_prereq_tree(self, course: Course, req_tree: PrereqTree,
+                            parent_groupinfo: GroupInfo = None,
                             course_to_idx: dict[Course, int] = None, 
-                            course_header: list = [None, True, False, 0]):
+                            course_header: list = [None, True, False, 0],
+                            group_0: bool = True):
         '''
         Parse the information in the given req_tree into the given course_reqs 
         'array' (list), creating and/or adding to this PrereqGrid's groups as 
@@ -89,6 +165,11 @@ class PrereqGrid:
 
         found_course_in_query = found_course_not_in_query = found_in_query_below \
                               = found_notin_below = False
+        
+        cur_tree_groupinfo = [req_tree.get_num_reqd(), True, '', [], False, []]
+        if req_tree.get_num_reqd() > PrereqTree.ALL and len(req_tree.get_reqs_list()) > 1 and self.countif([True if tree.get_num_reqd() > PrereqTree.ALL else False for tree in req_tree.get_reqs_list()], lambda x: x) > -1:
+            if __debug__: print("%r: SETTING GROUP_0 = False" % req_tree)
+            group_0 = False
 
         for sub_tree in req_tree:
             if __debug__: print("SEARCHING %r" % (sub_tree))
@@ -102,17 +183,25 @@ class PrereqGrid:
                 req = sub_tree.get_reqs_list()
                 if req in self.__query_courses:
                     found_course_in_query = True
-                    course_reqs[course_to_idx[req]] = parent_group
-                elif parent_group and parent_group.get_num_reqd() != PrereqTree.ALL:
+                    req_targets = (course_to_idx[req], course)
+                    # this is cleaned up later - at this stage we do not know if
+                    # we will find any other nested groups in the group or not.
+                    # we assume here that we will not, but we will cleanup later 
+                    if group_0:
+                        self.__groups_list[0][type(self).GI_TARGETS].append(req_targets) 
+                    else:
+                        cur_tree_groupinfo[type(self).GI_TARGETS].append(req_targets) 
+                    #course_reqs[course_to_idx[req]] = parent_group
+                elif parent_groupinfo:
                     found_course_not_in_query = True
                 # this is if req is a course not in query_courses and we are in
                 # the root group
                 else:
                     course_header[type(self).CH_ALL_PREREQS_SHOWN] = False
             elif tree_type >= PrereqTree.ALL:
-                next_group = sub_tree if tree_type > PrereqTree.ALL else parent_group 
-                found_in_query_below, found_notin_below, course_header = self.__parse_prereq_tree(course_reqs, sub_tree, parent_group=next_group,\
-                                                                                                  course_to_idx=course_to_idx, course_header=course_header)
+                #next_group = sub_tree if tree_type > PrereqTree.ALL else parent_group 
+                found_in_query_below, found_notin_below, course_header = self.__parse_prereq_tree(course, sub_tree, parent_groupinfo=cur_tree_groupinfo,\
+                                                                                                  course_to_idx=course_to_idx, course_header=course_header, group_0 = group_0)
                 
         found_course_in_query = any([found_course_in_query, found_in_query_below])
         found_course_not_in_query = any([found_course_not_in_query, found_notin_below])
@@ -121,7 +210,15 @@ class PrereqGrid:
         # though the recursion, but that's okay - the top-level recursion will
         # always be the correct answer and that's set last!
         if found_course_in_query:
-            self.__groups[parent_group] = not found_course_not_in_query
+            cur_tree_groupinfo[type(self).GI_ALL_SHOWN] = not found_course_not_in_query
+        
+        if (cur_tree_groupinfo[type(self).GI_TARGETS] != [] or cur_tree_groupinfo[type(self).GI_SUBGROUPS] != []):
+            if parent_groupinfo and not group_0:
+                parent_groupinfo[type(self).GI_SUBGROUPS].append(cur_tree_groupinfo)
+            elif group_0:
+                self.__groups_list.extend([tuple(subgroup) for subgroup in cur_tree_groupinfo[type(self).GI_SUBGROUPS]])
+            else:
+                self.__groups_list.append(cur_tree_groupinfo)
 
         return found_course_in_query, found_course_not_in_query, course_header
 
@@ -163,6 +260,8 @@ class PrereqGrid:
                       0 indicates 'always required', and > 0 links to a group which
                       info about it can be obtained with get_grid_info
         '''
+        return self.__grid
+        '''
         results = []
 
         for row, course in enumerate(self.__query_courses):
@@ -177,6 +276,7 @@ class PrereqGrid:
             results.append(cur_row)
 
         return results
+        '''
 
     def get_group_info(self) -> list[tuple[int, bool]]:
         '''
@@ -216,8 +316,8 @@ class PrereqGrid:
             for col in range(len(self.__target_courses)):
                 if not self.__grid[col][row]:
                     result += '✗'.center(width)
-                elif self.__grid[col][row].get_num_reqd() != PrereqTree.ALL:
-                    result += ('✓'+ self.to_superscript(self.__group_to_num[self.__grid[col][row]])).center(width)
+                elif self.__grid[col][row] != [0]:
+                    result += ('✓'+ self.to_superscript("".join([str(val) for val in self.__grid[col][row]]))).center(width)
                 else:
                     result += '✓'.center(width)
             result += "\n" 
@@ -236,7 +336,7 @@ class PrereqGrid:
         for group_idx, group_info in enumerate(self.__groups_list[1:]):
             # adjust for no group 0 in the legend
             group_num = group_idx+1
-            group_num_reqd, group_all_shown = group_info
+            group_num_reqd, group_all_shown, group_min_grade, subgroups = group_info
             result += ('Group %d:' % (group_num)).rjust(width) + \
                       ' Any %d of these.' % (group_num_reqd) 
             # FIXME: reenable later after discusing interface          

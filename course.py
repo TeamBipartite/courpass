@@ -52,6 +52,9 @@ class Course:
         '''
         return iter(self.__coreqs) if self.__coreqs else []
 
+    def prereqs_tree(self):
+        return self.__prereqs
+
     def get_coursecode(self):
         if (self.__dep == 'unknown'): return self.__dep
 
