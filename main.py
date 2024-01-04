@@ -5,7 +5,7 @@ import sys
 import pprint
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print("usage: %s <list of courses to search through> <list of prereqs to search for>" % (sys.argv[0]))
         sys.exit(1)
 

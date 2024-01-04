@@ -19,7 +19,7 @@ class PrereqTree:
 
     def __init__(self, num_reqd: int, 
                        reqs_list: any([list[Course], Course]) = [],
-                       min_grade: str = None, is_coreq: bool = False,
+                       min_grade: str = '', is_coreq: bool = False,
                        notes: str = None):
         self.__num_reqd  = num_reqd
         self.__reqs_list = reqs_list
