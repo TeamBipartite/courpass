@@ -34,7 +34,20 @@ class PrereqGrid:
     GroupInfoInternal = tuple[int, bool, str, list[tuple]]
     GI_TARGETS        = 4
 
-    def __init__(self, target_coursecodes: list[str], prereqs_to_search: list[str]):
+    def __init__(self, first_arg: str, prereqs_to_search: str = None):
+        '''
+        SIMULATED MULTIPLE CONSTURCTORS: if prereqs_to_search is not defined, 
+        first_arg is assumed to be a filename with saved target_courses on the 
+        first line and query_courses on the second line. Else, if prereqs_to_search
+        is defined, then first_arg is assumed to be a (comma-separated) list of
+        target_coursecodes.
+        '''
+        if not prereqs_to_search:
+            self.__init_from_file(first_arg)
+        else: 
+            self.__init_from_coursecodes(first_arg, prereqs_to_search)
+
+    def __init_from_coursecodes(self, target_coursecodes: str, prereqs_to_search: str):
         self.__target_courses = search_scraper.get_course_objs(target_coursecodes)
         search_scraper.populate_reqs(self.__target_courses)
 
@@ -42,27 +55,23 @@ class PrereqGrid:
 
         self.__assemble_prereq_grid()
 
-    #def __init__(self, prefetched_courses: tuple[list[Course], list[Course]]):
-    #    self.__target_courses, self.__query_courses = prefetched_courses
+    def __init_from_file(self, fname: str):
+        fp = open(fname)
+        target_str, query_str = fp.read().strip().split("\n")
 
-    #    self.__assemble_prereq_grid()
-    
-    #def __init__(self, fname: str):
-    #    fp = open(fname)
-    #    target_str, query_str = fp.read().strip().split("\n")
+        # these prompts are kept in due to risks of blindly using eval()
+        confirm = input("TARGET_COURSES: %s. Confirm? " % target_str)
+        if confirm.lower() != "y":
+            exit()
 
-    #    confirm = input("TARGET_COURSES: %s. Confirm? " % target_str)
-    #    if confirm.lower() != "y":
-    #        exit()
+        self.__target_courses = eval(target_str)
 
-    #    self.__target_courses = eval(target_str)
+        confirm = input("QUERY_COURSES: %s. Confirm? " % query_str)
+        if confirm.lower() != "y":
+            exit()
 
-    #    confirm = input("QUERY_COURSES: %s. Confirm? " % query_str)
-    #    if confirm.lower() != "y":
-    #        exit()
-
-    #    self.__query_courses = eval(query_str) 
-    #    self.__assemble_prereq_grid()
+        self.__query_courses = eval(query_str) 
+        self.__assemble_prereq_grid()
 
     def __str__(self) -> str:
         return self.text_grid()
@@ -80,7 +89,7 @@ class PrereqGrid:
         self.__groups_list = [(PrereqTree.ALL, True, '', [], [])]
 
         for idx, course in enumerate(self.__target_courses):
-            cur_course_reqs  = [None for req in self.__query_courses]
+            cur_course_reqs  = [(False, False, []) for req in self.__query_courses]
 
             if __debug__: print("COURSE %r" % (course))
             cur_course_notes= self.__parse_prereq_tree(idx, course.prereqs_tree(), \
@@ -121,7 +130,8 @@ class PrereqGrid:
         for idx, group in enumerate(groups_list):
             cur_group_key = parent_group_key + [idx]
             for req, course in group[type(self).GI_TARGETS]:
-               self.__grid[course][req] = cur_group_key
+               # FIXME: hardcoding not prereq for now
+               self.__grid[course][req] = (True, False, cur_group_key)
             self.__fill_group_nums(group[type(self).GI_SUBGROUPS], cur_group_key)
 
     def __create_singleton_groups(self, groups_list: list[GroupInfoInternal]) -> None:
@@ -299,10 +309,11 @@ class PrereqGrid:
         for row, course in enumerate(self.__query_courses):
             result += course.get_coursecode().rjust(left_col_width)
             for col in range(len(self.__target_courses)):
-                if not self.__grid[col][row]:
+                if not self.__grid[col][row][type(self).GD_IS_PREREQ]:
                     result += '✗'.center(width)
-                elif self.__grid[col][row] != [0]:
-                    result += ('✓'+ self.to_superscript("".join([str(val) for val in self.__grid[col][row]]))).center(width)
+                elif self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
+                    cur_group_str = "".join([str(val) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
+                    result += ('✓'+ self.to_superscript(cur_group_str)).center(width)
                 else:
                     result += '✓'.center(width)
             result += "\n" 

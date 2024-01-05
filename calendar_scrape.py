@@ -118,7 +118,7 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     # needs to be saved to its own variable as we may call next() on it again
     title_strings = reqs_tree.strings
     req_title = next(title_strings)
-    min_grade = None
+    min_grade = ''
     notes     = None
 
     # special cases that do not follow any other format
