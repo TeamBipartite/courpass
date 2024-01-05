@@ -1,5 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
 
 .logo {
     font-family: 'Archivo', sans-serif;
@@ -8,4 +15,70 @@
 
 .standard-text {
     font-family: 'Barlow Condensed', sans-serif;
+    font-size: large;
+    letter-spacing: 0.85px;
+}
+
+.search-history-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    margin: 8px 0 8px 0;
+}
+
+.search-button {
+    margin-top: 10px;
+}
+
+.nav-item:hover {
+    text-decoration: underline;
+}
+
+.prereq-search-page-container {
+    margin: 20px;
+}
+
+.home-page-container {
+    display: grid;
+    grid-template-rows: 20% 60% 20%;
+    height: 100%;
+}
+
+.home-page-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    justify-content: flex-start;
+    align-items: center;
+    grid-row-start: 2;
+    grid-row-end: 3;
+    margin: 20px;
+}
+
+#home-page-title {
+    font-size: xxx-large;
+}
+
+#home-page-contribute {
+    font-size: medium;
+}
+
+#home-page-contribute>a {
+    text-decoration: none;
+    color: black;
+    cursor: pointer;
+}
+
+#home-page-contribute>a :hover {
+    color: #CCCCFF;
+}
+
+.search-result-title {
+    font-weight: 600;
+}
+
+.legends-container {
+    display: flex;
+    flex-direction: column;
 }
