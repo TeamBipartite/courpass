@@ -1,30 +1,44 @@
 {% extends "../base/base.html" %}
 {% load getattr index%}
+{% include "./prereq_search_form.html" %}
 
 {% block template %}
 {% include "../base/navbar.html" %}
-<div class="container">
-    <form method="post" action={% url 'course_planning_tool' %}>
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="prereq-search" class="form-label">Prerequisite:</label>
-            <input type="search" name="prereq-search" class="form-control" id="exampleInputEmail1"
-                aria-describedby="emailHelp">
+<div class="prereq-search-page-container standard-text">
+    {% if prereq_search and course %}
+    <div class="search-history-container">
+        <div>
+            <div><span class="search-result-title">Prerequisite(s):</span> {{prereq_search}}</div>
+            <div><span class="search-result-title">Course(s):</span> {{course}}</div>
         </div>
-        <div class="mb-3">
-            <label for="course" class="form-label"
-                title="Enter a comma separated list of courses (e.g. CSC110, SENG265)">Courses:</label>
-            <i class="fa-solid fa-circle-info"
-                title="Enter a comma separated list of courses (e.g. CSC110, SENG265)"></i>
-            <input type="search" name="course" class="form-control" id="exampleInputEmail1"
-                aria-describedby="emailHelp">
+        <div> <button type="button" class="btn btn-primary search-button" data-bs-toggle="modal"
+                data-bs-target="#prereq-search-modal">
+                New Search <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
 
-    {% if searched and course %}
-    <br>
-    <h3>TODO: add search history here!</h3>
+        <div class="modal fade" id="prereq-search-modal" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-labelledby="prereq-search-modal-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="prereq-search-modal-label">Prerequisite Search Information</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% include "./prereq_search_form.html" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    {% include "./prereq_search_form.html" %}
+    {% endif %}
+
+
+
+    {% if prereq_search and course %}
     <table class="table">
         <thead>
             <tr>
@@ -69,32 +83,38 @@
             {% endfor %}
         </tbody>
     </table>
-    {% if header_legend %}
-    <span>Header Legend</span>
-    <table>
-        <tbody>
-            {% for header_item in header_legend %}
-            <tr>
-                {% autoescape off %}
-                <td scope="row">
-                    {{header_item|index:0}}
-                </td>
-                <td scope="row">
-                    {{header_item|index:1}}
-                </td>
-                {% endautoescape %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
+    <div class="legends-container">
+        {% if group_info %}
+        <button class="btn btn-light dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#group-legend">Group
+            Legend</button>
+        {% autoescape off %}
+        <div class="collapse show" id="group-legend">
+            {{group_info}}
 
-    {% if group_info %}
-    <span>Group Legend</span>
-    {% autoescape off %}
-    {{group_info}}
-    {% endautoescape %}
-    {% endif %}
+        </div>
+        {% endautoescape %}
+        {% endif %}
+        {% if header_legend %}
+        <button class="btn btn-light dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#demo">Header
+            Legend</button>
+        <table class="collapse" id="demo">
+            <tbody>
+                {% for header_item in header_legend %}
+                <tr>
+                    {% autoescape off %}
+                    <td scope=" row">
+                        {{header_item|index:0}}
+                    </td>
+                    <td scope="row">
+                        {{header_item|index:1}}
+                    </td>
+                    {% endautoescape %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
 </div>
 {% endif %}
 

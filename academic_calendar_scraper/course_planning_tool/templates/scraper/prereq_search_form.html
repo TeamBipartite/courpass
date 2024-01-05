@@ -1,0 +1,17 @@
+{% block prereq_search_form %}
+<form method="post" action={% url 'course_planning_tool' %}>
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="prereq-search" class="form-label">Prerequisite(s):</label>
+        <input type="search" name="prereq-search" class="form-control" id="exampleInputEmail1"
+            aria-describedby="emailHelp">
+    </div>
+    <div class="mb-3">
+        <label for="course" class="form-label"
+            title="Enter a comma separated list of courses (e.g. CSC110, SENG265)">Course(s):</label>
+        <i class="fa-solid fa-circle-info" title="Enter a comma separated list of courses (e.g. CSC110, SENG265)"></i>
+        <input type="search" name="course" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+{% endblock %}
