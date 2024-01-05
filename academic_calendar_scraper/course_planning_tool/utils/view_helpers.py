@@ -17,6 +17,7 @@ ALPHABET_LENGTH = 26
 def get_header_legend_data(header_info: list[tuple]) -> list[tuple]:
     not_all_prereqs_icon = "<i class='fa-solid fa-eye-slash'></i>"
     dept_perm_icon = "<i class='fa-solid fa-file-signature'></i>"
+    # Store min years in a set as there could be duplicates
     min_years = set([])
     result = {}
     for header_item in header_info:

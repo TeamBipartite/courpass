@@ -23,7 +23,7 @@ def course_planning_tool(request):
 
     if request.method == "POST":
         c["prereq_search"] = request.POST["prereq-search"]
-        c["course"] = request.POST["course"]
+        c["courses_search"] = request.POST["courses-search"]
         # Mock data for call to get_query_courses()
         c["query_courses"] = [(csc360, True, True, 2), (math346, False, False, 0)]
         # Mock data for call to get_prereq_courses()
@@ -31,13 +31,13 @@ def course_planning_tool(request):
         # Mock data for call to get_grid_data()
         c["grid_data"] = get_processed_grid_data([
             # is_prereq, is_corereq, group_id
-            [(False, False, []), (True, False, [1, 0])], [(False, False, []), (True, False, [1, 0])], 
+            [(False, False, []), (True, False, [1, 0])], [(False, True, []), (True, False, [1, 0])], 
             [(False, False, []), (True, False, [1, 1])], [(True, False, []), (False, False, [])]
             ])
         # Mock data for get_group_info()
         #TODO be sure to use correct constants!!! 
         mock_group_info = [(0, False, "", []),
-                           (1, True, "", [(2, True, "C+", []), (1, True, "A", [(1, True, "A", []), (2, True, "A", [])])]
+                           (1, True, "", [(2, True, "C+", []), (1, False, "A", [(1, True, "A", []), (2, True, "A", [])])]
                             )
                           ]
         c["group_info"] = get_group_legend(mock_group_info[1:])

@@ -5,11 +5,11 @@
 {% block template %}
 {% include "../base/navbar.html" %}
 <div class="prereq-search-page-container standard-text">
-    {% if prereq_search and course %}
+    {% if prereq_search and courses_search %}
     <div class="search-history-container">
         <div>
             <div><span class="search-result-title">Prerequisite(s):</span> {{prereq_search}}</div>
-            <div><span class="search-result-title">Course(s):</span> {{course}}</div>
+            <div><span class="search-result-title">Course(s):</span> {{courses_search}}</div>
         </div>
         <div> <button type="button" class="btn btn-primary search-button" data-bs-toggle="modal"
                 data-bs-target="#prereq-search-modal">
@@ -32,13 +32,6 @@
             </div>
         </div>
     </div>
-    {% else %}
-    {% include "./prereq_search_form.html" %}
-    {% endif %}
-
-
-
-    {% if prereq_search and course %}
     <table class="table">
         <thead>
             <tr>
@@ -70,11 +63,11 @@
                 {% for is_prereq, is_coreq, group_key in row %}
                 <td scope="row" class="text-center">
                     {% if is_prereq %}
-                    <i class="fa-solid fa-check"></i>
+                    <i class="fa-solid fa-check" title="Prerequisite"></i>
                     {% elif is_coreq %}
-                    <i class="fa-solid fa-code-branch"></i>
+                    <i class="fa-solid fa-code-branch" title="Corequisite"></i>
                     {% else %}
-                    <i class="fa-solid fa-xmark"></i>
+                    <i class="fa-solid fa-xmark" title="Not a prerequisite"></i>
                     {% endif %}
                     <sup>{{group_key}}</sup>
                 </td>
@@ -116,6 +109,12 @@
         {% endif %}
     </div>
 </div>
+{% else %}
+{% include "./prereq_search_form.html" %}
 {% endif %}
+
+
+
+
 
 {% endblock %}
