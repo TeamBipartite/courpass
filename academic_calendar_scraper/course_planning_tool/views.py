@@ -22,7 +22,7 @@ def course_planning_tool(request):
 
 
     if request.method == "POST":
-        c["searched"] = request.POST["prereq-search"]
+        c["prereq_search"] = request.POST["prereq-search"]
         c["course"] = request.POST["course"]
         # Mock data for call to get_query_courses()
         c["query_courses"] = [(csc360, True, True, 2), (math346, False, False, 0)]
@@ -36,10 +36,11 @@ def course_planning_tool(request):
             ])
         # Mock data for get_group_info()
         #TODO be sure to use correct constants!!! 
-        c["group_info"] = get_group_legend([(0, False, []),
+        mock_group_info = [(0, False, "", []),
                            (1, True, "", [(2, True, "C+", []), (1, True, "A", [(1, True, "A", []), (2, True, "A", [])])]
                             )
-                          ])
+                          ]
+        c["group_info"] = get_group_legend(mock_group_info[1:])
         # Process header legend data
         c["header_legend"] = get_header_legend_data(c["query_courses"])
         

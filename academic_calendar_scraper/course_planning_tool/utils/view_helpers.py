@@ -59,20 +59,21 @@ def get_group_key(group_id: list[int]) -> str:
     """
     key = ""
     for idx in range(len(group_id)):
-        key += translate_subkey(group_id[idx], idx)
+        key += translate_subkey(group_id[idx], idx, True)
     
     return key
 
-def translate_subkey(group_subid: int, idx: int) -> str:
+def translate_subkey(group_subid: int, idx: int, is_header: bool = False) -> str:
     """
     Generate a subkey based on the group_subid and the idx.
-    If the given idx is even then the returned subkey is group_subid 
+    If the given idx is even and is_header is True then the returned subkey is group_subid,
+    else the returned subkey is group_subid + 1.
     as a string. Otherwise, the returned subkey is a character in
     [a-z] (at the offset of group_subid in the alphabet).
     Ex: If group_subid = 2 and idx = 1 then 'c' is returned.
     """
     if idx % 2 == 0:
-        return str(group_subid)
+        return str(group_subid) if is_header else str(group_subid + 1)
     else:
         return chr(ord('a') + (abs(group_subid)) % ALPHABET_LENGTH)
 
@@ -87,7 +88,7 @@ def get_group_legend(group_info: list[tuple[int, str, bool, list]]) -> str:
     legend = [""]
 
     # Create a legend item for each group rule
-    for idx in range (1, len(group_info)): # Ignore index 0 as group at index 0 is always required
+    for idx in range(len(group_info)):
         add_rule_to_legend(group_info[idx], idx, 0, legend)
 
     # Return the HTML string only
@@ -118,17 +119,12 @@ def get_rule_text(rule_info: tuple, key: int, idx: int) -> str:
     rule += f"<sup><b>{translate_subkey(key, idx)}</b></sup> "
 
     if rule_info[NUM_REQS_FROM_GROUP] > 0:
-        if rule_info[NUM_REQS_FROM_GROUP] == 1:
-            rule += f"There is {rule_info[NUM_REQS_FROM_GROUP]} course in this group needed to satisfy the requirement. "
-        else: 
-            rule += f"There are {rule_info[NUM_REQS_FROM_GROUP]} courses in this group needed to satisfy the requirement. "
+       rule += f"Any {rule_info[NUM_REQS_FROM_GROUP]} of these. "
     
-    if rule_info[ALL_COURSES_SHOWN]:
-        rule += "All courses are shown on the above table. "
-    else:
-        rule += "Not all courses are shown on the above table; see the course calendar for details. "
+    if not rule_info[ALL_COURSES_SHOWN]:
+        rule += "Not all options in this group shown. See the course calendar for details. "
     
     if rule_info[MIN_GRADE] != "":
-        rule += f"A minimum grade of {rule_info[MIN_GRADE]} is required in this course."
+        rule += f"Minimum grade of {rule_info[MIN_GRADE]} required."
     
     return rule
