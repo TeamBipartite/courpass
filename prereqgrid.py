@@ -157,20 +157,15 @@ class PrereqGrid:
         Parse the information in the given req_tree into the given course_reqs 
         'array' (list), creating and/or adding to this PrereqGrid's groups as 
         necessary.
-        Returns: a 3-tuple with
-            - found_course_in_query - True if a prereq in this query was found
-                                      in req_tree, False otherwise
-            - found_notin_query - True if a prereq that is not in this query was
-                                  found in req_tree, False otherwise
-            - course_header - the given course_header updated with any additional
-                              notes discovered while parsing req_tree
+        Returns: the given course_header updated with any additional notes 
+                 discovered while parsing req_tree
         '''
         # for faster searching through these courses
         if not course_to_idx:
             course_to_idx = {course: idx for (idx, course) in enumerate(self.__query_courses)}
             if __debug__: print("INITALIZING COURSE_TO_IDX: %s" % (course_to_idx))
 
-        found_course_in_query = found_course_not_in_query = False
+        found_course_not_in_query = False
         
         cur_tree_groupinfo = [req_tree.get_num_reqd(), True, req_tree.get_min_grade(), \
                               [], []]
@@ -189,7 +184,6 @@ class PrereqGrid:
             elif tree_type == PrereqTree.SINGLE_COURSE:
                 req = sub_tree.get_reqs_list()
                 if req in self.__query_courses:
-                    found_course_in_query = True
                     req_targets = (course_to_idx[req], course)
                     # this is cleaned up later - at this stage we do not know if
                     # we will find any other nested groups in the group or not.
@@ -198,7 +192,7 @@ class PrereqGrid:
                         self.__groups_list[0][type(self).GI_TARGETS].append(req_targets) 
                     else:
                         cur_tree_groupinfo[type(self).GI_TARGETS].append(req_targets) 
-                elif parent_groupinfo and not group_0:
+                elif not group_0:
                     course_header[type(self).CH_ALL_PREREQS_SHOWN] = False
                     found_course_not_in_query = True
                 # this is if req is a course not in query_courses and we are in
@@ -212,11 +206,9 @@ class PrereqGrid:
                 len_after = len(cur_tree_groupinfo[type(self).GI_SUBGROUPS])
                 if (len_after == len_before):
                     cur_tree_groupinfo[type(self).GI_ALL_SHOWN] = False
-                
-        # this may cause the value in the dictionary to be updated several times
-        # though the recursion, but that's okay - the top-level recursion will
-        # always be the correct answer and that's set last!
-        if found_course_in_query:
+        
+        # don't set it back to True if it is already False!
+        if cur_tree_groupinfo[type(self).GI_ALL_SHOWN]:
             cur_tree_groupinfo[type(self).GI_ALL_SHOWN] = not found_course_not_in_query
         
         if (cur_tree_groupinfo[type(self).GI_TARGETS] != [] or cur_tree_groupinfo[type(self).GI_SUBGROUPS] != []):
@@ -341,7 +333,7 @@ class PrereqGrid:
         result = '-----------\nGrid legend:\n' if parent_level == ''  and len(root_group) > 1 else ''
         for group_idx, group_info in enumerate(root_group):
             # adjust for root group 0 being used for always necesary
-            group_num = parent_level + '%d' % (group_idx+1 if not parent_level else group_idx)
+            group_num = parent_level + '%d' % (group_idx+1)
             group_num_reqd, group_all_shown, group_min_grade, subgroups = group_info
             result += '\t' * ident + ('%s:' % (group_num)).rjust(width) + \
                       (' Any %d of these.' % (group_num_reqd) if group_num_reqd > PrereqTree.ALL else " All of these.")
