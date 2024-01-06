@@ -1,3 +1,4 @@
+#TODO: use python class constants once backend code is moved into django directory
 COURSE = 0
 ALL_PREREQS_SHOWN = 1
 DEPT_PERM = 2
@@ -13,6 +14,7 @@ MIN_GRADE = 2
 SUB_RULES = 3
 
 ALPHABET_LENGTH = 26
+LEGEND_MARGIN_SCALE_FACTOR = 20
 
 def get_header_legend_data(header_info: list[tuple]) -> list[tuple]:
     not_all_prereqs_icon = "<i class='fa-solid fa-eye-slash'></i>"
@@ -98,11 +100,11 @@ def get_group_legend(group_info: list[tuple[int, str, bool, list]]) -> str:
 def add_rule_to_legend(rule_info: tuple, key: int, idx: int, html_legend: list[str]) -> None:
     """
     Recursively add a rule to the html_legend.
-    Note that each rule will be added with a margin of 20*idx px. 
+    Note that each rule will be added with a margin of LEGEND_MARGIN_SCALE_FACTOR*idx px. 
     Assumptions: the given html_legend is a list of length 1 where the list item
     is a string holding the (potentially partially built) legend.
     """
-    html_legend[0] += f'<div style="margin-left:{20*idx}px;">{get_rule_text(rule_info, key, idx)}</div>'
+    html_legend[0] += f'<div style="margin-left:{LEGEND_MARGIN_SCALE_FACTOR*idx}px;">{get_rule_text(rule_info, key, idx)}</div>'
 
     if len(rule_info[SUB_RULES]) == 0: 
         return
@@ -118,6 +120,9 @@ def get_rule_text(rule_info: tuple, key: int, idx: int) -> str:
     """
     rule = ""
     rule += f"<sup><b>{translate_subkey(key, idx)}</b></sup> "
+
+    if rule_info[NUM_REQS_FROM_GROUP] == 0:
+       rule += f"All of these. "
 
     if rule_info[NUM_REQS_FROM_GROUP] > 0:
        rule += f"Any {rule_info[NUM_REQS_FROM_GROUP]} of these. "
