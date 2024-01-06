@@ -1,0 +1,21 @@
+{% extends "../base/base.html" %}
+
+{% block template %}
+{% include "../base/navbar.html" %}
+
+<div class="home-page-container">
+    <div class="home-page-content">
+        <div id="home-page-title" class="logo">
+            <i class="fa-regular fa-compass"></i>
+            <span>Courpass</span>
+        </div>
+        <span id="home-page-description" class="standard-text">Helps students determine whether courses
+            are
+            prerequisites of others.</span>
+        <span id="home-page-contribute" class="standard-text">Contribute on <a
+                href="https://github.com/TeamBipartite/academic-calendar-scraper" target="_blank"><i
+                    class="fa-brands fa-github"></i></a></span>
+    </div>
+</div>
+
+{% endblock %}

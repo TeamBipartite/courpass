@@ -1,0 +1,120 @@
+{% extends "../base/base.html" %}
+{% load getattr index%}
+{% include "./prereq_search_form.html" %}
+
+{% block template %}
+{% include "../base/navbar.html" %}
+<div class="prereq-search-page-container standard-text">
+    {% if prereq_search and courses_search %}
+    <div class="search-history-container">
+        <div>
+            <div><span class="search-result-title">Prerequisite(s):</span> {{prereq_search}}</div>
+            <div><span class="search-result-title">Course(s):</span> {{courses_search}}</div>
+        </div>
+        <div> <button type="button" class="btn btn-primary search-button" data-bs-toggle="modal"
+                data-bs-target="#prereq-search-modal">
+                New Search <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <div class="modal fade" id="prereq-search-modal" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-labelledby="prereq-search-modal-label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="prereq-search-modal-label">Prerequisite Search Information</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% include "./prereq_search_form.html" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Prereq of:</th>
+                {% for course, all_shown, dept_perm, min_year in query_courses %}
+                <th scope="col" class="text-center">
+                    <a href='{{ course|getattr:"_Course__cal_weblink" }}'
+                        target="_blank">{{course|getattr:"_Course__dep"}}{{course|getattr:"_Course__num"}}</a>
+                    {% if min_year >= 2 %}
+                    <sup>{{min_year}}</sup>
+                    {% endif %}
+                    {% if not all_shown %}
+                    <i class="fa-solid fa-eye-slash"></i>
+                    {% endif %}
+                    {% if dept_perm %}
+                    <i class="fa-solid fa-file-signature"></i>
+                    {% endif %}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in grid_data%}
+            <tr>
+                <th scope="row">
+                    <a href='{{ prereq_courses|index:forloop.counter0|getattr:"_Course__cal_weblink" }}'
+                        target="_blank">{{prereq_courses|index:forloop.counter0|getattr:"_Course__dep"}}{{prereq_courses|index:forloop.counter0|getattr:"_Course__num"}}</a>
+                </th>
+                {% for is_prereq, is_coreq, group_key in row %}
+                <td scope="row" class="text-center">
+                    {% if is_prereq %}
+                    <i class="fa-solid fa-check" title="Prerequisite"></i>
+                    {% elif is_coreq %}
+                    <i class="fa-solid fa-code-branch" title="Corequisite"></i>
+                    {% else %}
+                    <i class="fa-solid fa-xmark" title="Not a prerequisite"></i>
+                    {% endif %}
+                    <sup>{{group_key}}</sup>
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="legends-container">
+        {% if group_info %}
+        <button class="btn btn-light dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#group-legend">Group
+            Legend</button>
+        {% autoescape off %}
+        <div class="collapse show" id="group-legend">
+            {{group_info}}
+
+        </div>
+        {% endautoescape %}
+        {% endif %}
+        {% if header_legend %}
+        <button class="btn btn-light dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#demo">Header
+            Legend</button>
+        <table class="collapse" id="demo">
+            <tbody>
+                {% for header_item in header_legend %}
+                <tr>
+                    {% autoescape off %}
+                    <td scope=" row">
+                        {{header_item|index:0}}
+                    </td>
+                    <td scope="row">
+                        {{header_item|index:1}}
+                    </td>
+                    {% endautoescape %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+{% include "./prereq_search_form.html" %}
+{% endif %}
+
+
+
+
+
+{% endblock %}
