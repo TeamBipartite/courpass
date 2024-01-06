@@ -129,9 +129,9 @@ class PrereqGrid:
         '''
         for idx, group in enumerate(groups_list):
             cur_group_key = parent_group_key + [idx]
-            for req, course in group[type(self).GI_TARGETS]:
+            for req, course, is_coreq in group[type(self).GI_TARGETS]:
                # FIXME: hardcoding not prereq for now
-               self.__grid[course][req] = (True, False, cur_group_key)
+               self.__grid[course][req] = (True, is_coreq, cur_group_key)
             self.__fill_group_nums(group[type(self).GI_SUBGROUPS], cur_group_key)
 
     def __create_singleton_groups(self, groups_list: list[GroupInfoInternal]) -> None:
@@ -152,7 +152,7 @@ class PrereqGrid:
                             parent_groupinfo: GroupInfo = None,
                             course_to_idx: dict[Course, int] = None, 
                             course_header: list = [None, True, False, 0],
-                            group_0: bool = True):
+                            group_0: bool = True, is_coreq: bool = False):
         '''
         Parse the information in the given req_tree into the given course_reqs 
         'array' (list), creating and/or adding to this PrereqGrid's groups as 
@@ -172,6 +172,8 @@ class PrereqGrid:
         if req_tree.get_num_reqd() > PrereqTree.ALL and len(req_tree.get_reqs_list()) > 1:
             if __debug__: print("%r: SETTING GROUP_0 = False" % req_tree)
             group_0 = False
+        if req_tree.is_coreq():
+            is_coreq = True
 
         for sub_tree in req_tree:
             if __debug__: print("SEARCHING %r" % (sub_tree))
@@ -184,7 +186,7 @@ class PrereqGrid:
             elif tree_type == PrereqTree.SINGLE_COURSE:
                 req = sub_tree.get_reqs_list()
                 if req in self.__query_courses:
-                    req_targets = (course_to_idx[req], course)
+                    req_targets = (course_to_idx[req], course, is_coreq)
                     # this is cleaned up later - at this stage we do not know if
                     # we will find any other nested groups in the group or not.
                     # we assume here that we will not, but we will cleanup later 
@@ -202,7 +204,7 @@ class PrereqGrid:
             elif tree_type >= PrereqTree.ALL:
                 len_before = len(cur_tree_groupinfo[type(self).GI_SUBGROUPS])
                 course_header = self.__parse_prereq_tree(course, sub_tree, parent_groupinfo=cur_tree_groupinfo,\
-                                                                                                  course_to_idx=course_to_idx, course_header=course_header, group_0 = group_0)
+                                                                                                  course_to_idx=course_to_idx, course_header=course_header, group_0 = group_0, is_coreq = is_coreq)
                 len_after = len(cur_tree_groupinfo[type(self).GI_SUBGROUPS])
                 if (len_after == len_before):
                     cur_tree_groupinfo[type(self).GI_ALL_SHOWN] = False
@@ -305,9 +307,9 @@ class PrereqGrid:
                     result += '✗'.center(width)
                 elif self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
                     cur_group_str = "".join([str(val) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
-                    result += ('✓'+ self.to_superscript(cur_group_str)).center(width)
+                    result += ('✓' + ("?" if self.__grid[col][row][type(self).GD_IS_COREQ] else "") + self.to_superscript(cur_group_str)).center(width)
                 else:
-                    result += '✓'.center(width)
+                    result += ('✓' + ("?" if self.__grid[col][row][type(self).GD_IS_COREQ] else "")).center(width)
             result += "\n" 
 
         if any(self.__header_row):

@@ -49,8 +49,10 @@ def populate_reqs(courses: list[Course]) -> None:
     '''
     for course in courses:
         course_reqs = calendar_scrape.get_reqs_tuple(course.get_cal_weblink())
-        course.set_reqs(*course_reqs)
-
+        if len(course_reqs) == 1:
+            course.set_reqs(*course_reqs)
+            continue
+        course.set_reqs(PrereqTree(num_reqd = PrereqTree.ALL, reqs_list = course_reqs))
 
 def get_courses(href: str) -> list[Course]:
     '''
