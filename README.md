@@ -21,12 +21,14 @@ $ python3 -O main.py <LIST_OF_COURSES_TO_SEARCH> <LIST_OF_PREREQS_TO_FIND>
 where `LIST_OF_COURSES_TO_SEARCH` and `LIST_OF_PREREQS_TO_FIND` are comma-separated lists. For example:
 
 ```bash
-$ python3 -O main.py CSC360,CSC361,CSC370,CSC421 CSC226,SENG265,CSC230
-Prereq of: CSC360*    CSC361   CSC370*   CSC421⁴   MATH100*+ 
-    CSC226    ✗         ✗         ✗         ✓         ✗     
-   SENG265    ✓         ✓         ✓         ✗         ✗     
-    CSC230    ✓¹        ✓¹        ✗         ✗         ✗     
-    ECE255    ✓¹        ✓¹        ✗         ✗         ✗     
+$ python3 -O main.py CSC360,CSC361,CSC370,CSC421,MATH100,MATH346 CSC226,SENG265,CSC230,ECE255,MATH204,MATH200
+Prereq of: CSC360*    CSC361   CSC370*   CSC421⁴   MATH100+  MATH346  
+    CSC226    ✗         ✗         ✗         ✓         ✗         ✗     
+   SENG265    ✓         ✓         ✓         ✗         ✗         ✗     
+    CSC230    ✓¹        ✓²        ✗         ✗         ✗         ✗     
+    ECE255    ✓¹        ✓²        ✗         ✗         ✗         ✗     
+   MATH204    ✗         ✗         ✗         ✗         ✗        ✓³¹    
+   MATH200    ✗         ✗         ✗         ✗         ✗        ✓³⁰    
 -----------
 Header legend:
      ²³⁴⁵: Minimum year standing required.
@@ -34,7 +36,11 @@ Header legend:
         +: Or department permission.
 -----------
 Grid legend:
-  Group 1: Any 1 of these. Not all courses in this group shown. See calendar for details.
+        1: Any 1 of these. Not all courses in this group shown. See calendar for details.
+        2: Any 1 of these. Not all courses in this group shown. See calendar for details.
+        3: Any 1 of these.
+              3 0: All of these. Not all courses in this group shown. See calendar for details.
+              3 1: All of these.
 ```
 
 To enable debuging output, remove the `-O` argument from the launch command.

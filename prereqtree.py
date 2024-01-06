@@ -12,16 +12,19 @@ class PrereqTree:
     MIN_YR_STNDG  = -4 # Minimum year standing required. Year specified as an int
                        # by min_grade field
 
+    # this is just used to create more readable repr output
     NUM_REQD_TO_TYPE = {0: 'PrereqTree.ALL', -1: 'PrereqTree.SINGLE_COURSE', 
                         -2: 'PrereqTree.DEPMT_PERMSN', -3: 'PrereqTree.AWR',
                         -4: 'PrereqTree.MIN_YR_STNDG'}
 
     def __init__(self, num_reqd: int, 
                        reqs_list: any([list[Course], Course]) = [],
-                       min_grade: str = None, notes: str = None):
+                       min_grade: str = '', is_coreq: bool = False,
+                       notes: str = None):
         self.__num_reqd  = num_reqd
         self.__reqs_list = reqs_list
         self.__min_grade = min_grade
+        self.__is_coreq  = is_coreq
         self.__notes     = notes
 
     def __repr__(self):
@@ -57,7 +60,6 @@ class PrereqTree:
             for req in course:
                 yield req
 
-    # DEPRECATED: not reccommended to use
     def get_num_reqd(self):
         return self.__num_reqd
 
@@ -69,6 +71,9 @@ class PrereqTree:
 
     def get_min_grade(self):
         return self.__min_grade
+
+    def get_is_coreq(self):
+        return self.__is_coreq
         
     def get_notes(self):
         return self.__notes
