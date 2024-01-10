@@ -307,9 +307,9 @@ class PrereqGrid:
                     result += '✗'.center(width)
                 elif self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
                     cur_group_str = "".join([str(val) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
-                    result += ('✓' + ("?" if self.__grid[col][row][type(self).GD_IS_COREQ] else "") + self.to_superscript(cur_group_str)).center(width)
+                    result += (("C" if self.__grid[col][row][type(self).GD_IS_COREQ] else '✓') + self.to_superscript(cur_group_str)).center(width)
                 else:
-                    result += ('✓' + ("?" if self.__grid[col][row][type(self).GD_IS_COREQ] else "")).center(width)
+                    result += ("C" if self.__grid[col][row][type(self).GD_IS_COREQ] else '✓').center(width)
             result += "\n" 
 
         if any(self.__header_row):
@@ -332,7 +332,7 @@ class PrereqGrid:
         Generate and return a human-redable description of the (potentionally) 
         nested groups in this PrereqGrid. 
         '''
-        result = '-----------\nGrid legend:\n' if parent_level == ''  and len(root_group) > 1 else ''
+        result = '-----------\nGrid legend:\n ✓: Prerequsite, C: Corequisite, ✗: Not a co/prequisite\n' if parent_level == ''  else ''
         for group_idx, group_info in enumerate(root_group):
             # adjust for root group 0 being used for always necesary
             group_num = parent_level + '%d' % (group_idx+1)

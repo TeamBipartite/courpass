@@ -29,8 +29,6 @@ def get_reqs_tuple(url: str) -> (PrereqTree, PrereqTree):
     prereq_sectn_htmls = get_calendar_info(url)
 
     return [parse_reqs(prereq_sectn_html) for prereq_sectn_html in prereq_sectn_htmls]
-    #return (parse_reqs(prereq_sectn_htmls[0]) if len(prereq_sectn_htmls) > 0 else None, 
-    #        parse_reqs(prereq_sectn_htmls[1]) if len(prereq_sectn_htmls) > 1 else None)
 
 def get_calendar_info(url) -> list[str]:
     driver = None
