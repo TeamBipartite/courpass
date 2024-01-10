@@ -1,6 +1,6 @@
-from course import Course
-from prereqtree import PrereqTree
-import search_scraper
+from ..course.course import Course
+from ..prereqtree.prereqtree import PrereqTree
+from .. import search_scraper
 import itertools
 
 # unicode superscript string versions of the keys

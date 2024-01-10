@@ -54,7 +54,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for row in grid_data%}
+            {% for row in grid_data %}
             <tr>
                 <th scope="row">
                     <a href='{{ prereq_courses|index:forloop.counter0|getattr:"_Course__cal_weblink" }}'
