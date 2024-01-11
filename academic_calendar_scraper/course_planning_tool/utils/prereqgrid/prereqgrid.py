@@ -1,6 +1,6 @@
 from ..course.course import Course
 from ..prereqtree.prereqtree import PrereqTree
-from .. import search_scraper
+from ..search_scraper import search_scraper
 import itertools
 
 # unicode superscript string versions of the keys
@@ -47,7 +47,7 @@ class PrereqGrid:
         else: 
             self.__init_from_coursecodes(first_arg, prereqs_to_search)
 
-    def __init_from_coursecodes(self, target_coursecodes: str, prereqs_to_search: str):
+    def __init_from_coursecodes(self, target_coursecodes: list[str], prereqs_to_search: list[str]):
         self.__target_courses = search_scraper.get_course_objs(target_coursecodes)
         search_scraper.populate_reqs(self.__target_courses)
 

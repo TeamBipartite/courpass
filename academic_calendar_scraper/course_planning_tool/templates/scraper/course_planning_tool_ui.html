@@ -54,23 +54,25 @@
             </tr>
         </thead>
         <tbody>
-            {% for row in grid_data %}
+            {% for prereq in prereq_courses %}
             <tr>
                 <th scope="row">
-                    <a href='{{ prereq_courses|index:forloop.counter0|getattr:"_Course__cal_weblink" }}'
-                        target="_blank">{{prereq_courses|index:forloop.counter0|getattr:"_Course__dep"}}{{prereq_courses|index:forloop.counter0|getattr:"_Course__num"}}</a>
+                    <a href='{{ prereq|getattr:"_Course__cal_weblink" }}'
+                        target="_blank">{{prereq|getattr:"_Course__dep"}}{{prereq_courses|index:forloop.counter0|getattr:"_Course__num"}}</a>
                 </th>
-                {% for is_prereq, is_coreq, group_key in row %}
+                {% for course in query_courses %}
+                {% with entry=grid_data|index:forloop.counter0|index:forloop.parentloop.counter0 %}
                 <td scope="row" class="text-center">
-                    {% if is_prereq %}
+                    {% if entry.0 %}
                     <i class="fa-solid fa-check" title="Prerequisite"></i>
-                    {% elif is_coreq %}
+                    {% elif entry.1 %}
                     <i class="fa-solid fa-code-branch" title="Corequisite"></i>
                     {% else %}
                     <i class="fa-solid fa-xmark" title="Not a prerequisite"></i>
                     {% endif %}
-                    <sup>{{group_key}}</sup>
+                    <sup>{{entry.2}}</sup>
                 </td>
+                {% endwith %}
                 {% endfor %}
             </tr>
             {% endfor %}

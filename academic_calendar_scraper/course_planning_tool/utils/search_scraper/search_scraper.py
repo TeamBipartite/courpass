@@ -1,6 +1,6 @@
-from .course.course import Course
+from ..course.course import Course
 from bs4 import BeautifulSoup
-from .calendar_scrape import calendar_scrape
+from ..calendar_scrape import calendar_scrape
 import urllib.request
 
 CURRENT_TERM = '202309'
