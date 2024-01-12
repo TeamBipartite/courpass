@@ -1,9 +1,9 @@
 #! /bin/env python3
 
 import pytest
-import calendar_scrape
-from course import Course
-from prereqtree import PrereqTree
+import utils.calendar_scrape.calendar_scrape as calendar_scrape
+from utils.course.course import Course
+from utils.prereqtree.prereqtree import PrereqTree
 
 class TestCalendarScrape:
 
