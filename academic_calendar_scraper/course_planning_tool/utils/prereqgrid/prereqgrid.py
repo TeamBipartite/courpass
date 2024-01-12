@@ -330,7 +330,7 @@ class PrereqGrid:
         Generate and return a human-redable description of the (potentionally) 
         nested groups in this PrereqGrid. 
         '''
-        result = '-----------\nGrid legend:\n' if parent_level == ''  and len(root_group) > 1 else ''
+        result = '-----------\nGrid legend:\n' if parent_level == ''  and root_group != [] else ''
         for group_idx, group_info in enumerate(root_group):
             # adjust for root group 0 being used for always necesary
             group_num = parent_level + '%d' % (group_idx+1)

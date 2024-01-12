@@ -1,1 +1,0 @@
-academic_calendar_scraper/course_planning_tool/utils/search_scraper.py
