@@ -62,16 +62,19 @@
                 </th>
                 {% for course in query_courses %}
                 {% with entry=grid_data|index:forloop.counter0|index:forloop.parentloop.counter0 %}
+                {# TODO: find a better way to unpack tuple (use the constants??) #}
+                {% with is_prereq=entry.0 is_coreq=entry.1 group_key=entry.2 %}
                 <td scope="row" class="text-center">
-                    {% if entry.0 %}
+                    {% if is_prereq %}
                     <i class="fa-solid fa-check" title="Prerequisite"></i>
-                    {% elif entry.1 %}
+                    {% elif is_coreq %}
                     <i class="fa-solid fa-code-branch" title="Corequisite"></i>
                     {% else %}
-                    <i class="fa-solid fa-xmark" title="Not a prerequisite"></i>
+                    <i class="fa-solid fa-xmark" title="Not a co/prerequisite"></i>
                     {% endif %}
-                    <sup>{{entry.2}}</sup>
+                    <sup>{{group_key}}</sup>
                 </td>
+                {% endwith %}
                 {% endwith %}
                 {% endfor %}
             </tr>
