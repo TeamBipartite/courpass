@@ -60,6 +60,8 @@ def get_group_key(group_id: list[int]) -> str:
     and elements at odd index positions are characters in [a-z].
     Ex: A group_id of [1, 0, 2, 1] becomes the string '1a2b'
     """
+    if group_id == [0]: return ''
+
     key = ""
     for idx in range(len(group_id)):
         key += translate_subkey(group_id[idx], idx, True)

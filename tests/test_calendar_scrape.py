@@ -1,9 +1,9 @@
 #! /bin/env python3
 
 import pytest
-import calendar_scrape
-from course import Course
-from prereqtree import PrereqTree
+import utils.calendar_scrape.calendar_scrape as calendar_scrape
+from utils.course.course import Course
+from utils.prereqtree.prereqtree import PrereqTree
 
 class TestCalendarScrape:
 
@@ -53,28 +53,28 @@ class TestCalendarScrape:
                                [
                                 PrereqTree(PrereqTree.ALL, 
                                  [                                 
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.SENG265_COURSE, None, None)
-                                 ], None, None
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.SENG265_COURSE, '', None)
+                                 ], '', None
                                 ),
                                 PrereqTree(1, 
                                  [
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC230_COURSE, None, None),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CENG255_COURSE, None, None),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.ECE255_COURSE, None, None)
-                                 ], None, None
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC230_COURSE, '', None),
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CENG255_COURSE, '', None),
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.ECE255_COURSE, '', None)
+                                 ], '', None
                                 )
-                               ], None, None
+                               ], '', None
                               )
-                             ], None, None
+                             ], '', None
                             ) and \
                calendar_scrape.parse_reqs(results[1]) == PrereqTree(1,
                              [
                                PrereqTree(PrereqTree.ALL,
                                 [
-                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC226_COURSE, None, None)
-                                ], None, None
+                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC226_COURSE, '', None)
+                                ], '', None
                                )
-                              ], None, None
+                              ], '', None
                              )
 
     def test_empty_csc105(self):
@@ -92,11 +92,11 @@ class TestCalendarScrape:
                               [
                                PrereqTree(1, 
                                 [
-                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC115_COURSE, None, None),
-                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC116_COURSE, None, None)
-                                ], None, None
+                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC115_COURSE, '', None),
+                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC116_COURSE, '', None)
+                                ], '', None
                                )
-                              ], None, None 
+                              ], '', None 
                              )
 
     def test_many_prereqs_chem101(self):
@@ -108,22 +108,22 @@ class TestCalendarScrape:
                              [
                               PrereqTree(PrereqTree.ALL,
                                [
-                                PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CHEM11_COURSE, None, None),
+                                PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CHEM11_COURSE, '', None),
                                 PrereqTree(1,
                                  [
                                   PrereqTree(PrereqTree.ALL,
                                    [
-                                    PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.MATH120_COURSE, None, None)
-                                   ], None, None
+                                    PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.MATH120_COURSE, '', None)
+                                   ], '', None
                                   ),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PRECALC12_COURSE, None, None),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PRNCPLES12_COURSE, None, None)
-                                 ], None, None
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PRECALC12_COURSE, '', None),
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PRNCPLES12_COURSE, '', None)
+                                 ], '', None
                                 )
-                               ], None, None
+                               ], '', None
                               ),
-                              PrereqTree(PrereqTree.DEPMT_PERMSN, [], None, None)
-                             ], None, None
+                              PrereqTree(PrereqTree.DEPMT_PERMSN, [], '', None)
+                             ], '', None
                             )
 
 
@@ -136,23 +136,23 @@ class TestCalendarScrape:
                               [
                                PrereqTree(PrereqTree.ALL,
                                 [
-                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC225_COURSE, None, None)
-                                ], None, None
+                                 PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC225_COURSE, '', None)
+                                ], '', None
                                )
-                              ], None, None
+                              ], '', None
                              ) and \
                 calendar_scrape.parse_reqs(results[1]) == PrereqTree(1, 
                                [
                                 PrereqTree(1,
                                  [
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.GEOG226_COURSE, None, None),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PSYC300A_COURSE, None, None),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.STAT254_COURSE, None, None),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.STAT255_COURSE, None, None),
-                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.STAT260_COURSE, None, None)
-                                 ], None, None
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.GEOG226_COURSE, '', None),
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PSYC300A_COURSE, '', None),
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.STAT254_COURSE, '', None),
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.STAT255_COURSE, '', None),
+                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.STAT260_COURSE, '', None)
+                                 ], '', None
                                 )
-                               ], None, None
+                               ], '', None
                               )
 
     def test_min_grade_reqs_math100(self):
@@ -166,14 +166,14 @@ class TestCalendarScrape:
                                 [
                                  PrereqTree(PrereqTree.ALL, 
                                   [
-                                   PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.MATH120_COURSE, None, None)
+                                   PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.MATH120_COURSE, '', None)
                                   ], 'C+', None
                                  ),
                                  PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.PRECALC12_COURSE, 'B', None),
-                                 PrereqTree(PrereqTree.DEPMT_PERMSN, [], None, None)
-                                ], None, None
+                                 PrereqTree(PrereqTree.DEPMT_PERMSN, [], '', None)
+                                ], '', None
                                )
-                              ], None, None
+                              ], '', None
                              )
 
     def test_awr_req_atwp305(self):
@@ -183,8 +183,8 @@ class TestCalendarScrape:
         assert len(results) == 1 and \
                calendar_scrape.parse_reqs(results[0]) == PrereqTree(1, 
                               [
-                               PrereqTree(PrereqTree.AWR, [], None, None)
-                              ], None, None
+                               PrereqTree(PrereqTree.AWR, [], '', None)
+                              ], '', None
                              )
 
     def test_min_yr_req_csc421(self):
@@ -198,12 +198,12 @@ class TestCalendarScrape:
                                 [
                                  PrereqTree(PrereqTree.ALL,
                                   [
-                                   PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC226_COURSE, None, None)
-                                  ], None, None
+                                   PrereqTree(PrereqTree.SINGLE_COURSE, self.__class__.CSC226_COURSE, '', None)
+                                  ], '', None
                                  ),
                                  PrereqTree(PrereqTree.MIN_YR_STNDG, [], 4, None)
-                                ], None, None
+                                ], '', None
                                )
-                              ], None, None
+                              ], '', None
                              )
 

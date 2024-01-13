@@ -1,4 +1,4 @@
-from course import Course
+from ..course.course import Course
 
 
 class PrereqTree:

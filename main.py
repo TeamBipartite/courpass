@@ -1,6 +1,6 @@
 #!/usr/bin env python3
 
-from prereqgrid import PrereqGrid
+from utils.prereqgrid.prereqgrid import PrereqGrid
 import sys
 import pprint
 
