@@ -107,7 +107,7 @@ def parse_reqs(raw_html: str, is_coreq = False) -> PrereqTree:
     roots = [child_tag.find('li') if child_tag.name != 'li' else child_tag for child_tag in list_tree.contents] if list_tree else []
 
     # always 'complete one of' for the top-level items?
-    return PrereqTree(1, [parse_reqs_rec(root) for root in roots], None, None)
+    return PrereqTree(1, [parse_reqs_rec(root) for root in roots], '', None)
 
 def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
     '''
