@@ -1,7 +1,6 @@
-from course import Course
-from prereqtree import PrereqTree
+from ..course.course import Course
 from bs4 import BeautifulSoup
-import calendar_scrape
+from ..calendar_scrape import calendar_scrape
 import urllib.request
 
 CURRENT_TERM = '202309'

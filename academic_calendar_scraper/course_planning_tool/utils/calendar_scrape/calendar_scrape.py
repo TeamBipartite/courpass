@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup
 from collections import namedtuple
 import re
 import sys
-from course import Course
-from prereqtree import PrereqTree
+from ..course.course import Course
+from ..prereqtree.prereqtree import PrereqTree
 
 WORD_TO_RANK = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5}
 
@@ -21,7 +21,7 @@ WEBDRIVERS  = {webdriver.ChromeOptions: webdriver.Chrome,
 
 UVIC_ACADEMIC_CAL_INDEX = 'https://www.uvic.ca/calendar/undergrad/index.php'
 
-def get_reqs_tuple(url: str) -> (PrereqTree, PrereqTree):
+def get_reqs_tuple(url: str) -> tuple[PrereqTree, PrereqTree]:
     '''
     Returns (prerequsite tree, coreqsuite tree) for the course at the given url.
     If either category has no requirements, then that tree is simply None
@@ -82,7 +82,7 @@ def parse_course_link(element) -> str:
     # links in the element are in the format '#/courses/view/...'
     return UVIC_ACADEMIC_CAL_INDEX +  element['href']
 
-def split_course_code(code: str) -> (str, str):
+def split_course_code(code: str) -> tuple[str, str]:
     '''
     Splits course codes in forms such as 'CSC110', 'CSC 110 ', or 'CS 110' into
     their respective department and course number components.

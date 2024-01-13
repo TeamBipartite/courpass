@@ -1,6 +1,6 @@
-from course import Course
-from prereqtree import PrereqTree
-import search_scraper
+from ..course.course import Course
+from ..prereqtree.prereqtree import PrereqTree
+from ..search_scraper import search_scraper
 import itertools
 
 # unicode superscript string versions of the keys
@@ -47,7 +47,7 @@ class PrereqGrid:
         else: 
             self.__init_from_coursecodes(first_arg, prereqs_to_search)
 
-    def __init_from_coursecodes(self, target_coursecodes: str, prereqs_to_search: str):
+    def __init_from_coursecodes(self, target_coursecodes: list[str], prereqs_to_search: list[str]):
         self.__target_courses = search_scraper.get_course_objs(target_coursecodes)
         search_scraper.populate_reqs(self.__target_courses)
 
@@ -330,7 +330,7 @@ class PrereqGrid:
         Generate and return a human-redable description of the (potentionally) 
         nested groups in this PrereqGrid. 
         '''
-        result = '-----------\nGrid legend:\n' if parent_level == ''  and len(root_group) > 1 else ''
+        result = '-----------\nGrid legend:\n' if parent_level == ''  and root_group != [] else ''
         for group_idx, group_info in enumerate(root_group):
             # adjust for root group 0 being used for always necesary
             group_num = parent_level + '%d' % (group_idx+1)
