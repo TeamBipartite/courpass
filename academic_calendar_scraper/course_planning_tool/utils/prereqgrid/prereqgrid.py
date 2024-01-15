@@ -277,6 +277,40 @@ class PrereqGrid:
                       False otherwise
         '''
         return self.__groups_list
+        
+    @classmethod
+    def get_group_key(cls, group_id: list[int], numeric_only: bool = False) -> str:
+        """
+        Construct an alphanumeric group key (as a string) from the given 
+        group_id where elements at even index positions are digits in [0-9] 
+        and elements at odd index positions are characters in [a-z].
+        Ex: A group_id of [1, 0, 2, 1] becomes the string '1a2b'
+        """
+        if group_id == [0]: return ''
+
+        key = ""
+        for idx, subid in enumerate(group_id):
+            key += cls.translate_subkey(subid, idx, True, numeric_only = numeric_only)
+        
+        return key
+
+    @staticmethod
+    def translate_subkey(group_subid: int, idx: int, is_header: bool = False,
+                         numeric_only: bool = False) -> str:
+        """
+        Generate a subkey based on the group_subid and the idx.
+        If the given idx is even and is_header is True then the returned subkey is group_subid,
+        else the returned subkey is group_subid + 1.
+        as a string. Otherwise, the returned subkey is a character in
+        [a-z] (at the offset of group_subid in the alphabet).
+        Ex: If group_subid = 2 and idx = 1 then 'c' is returned.
+
+        If numeric_only, return numeric subkeys regardless of idx.
+        """
+        if numeric_only or idx % 2 == 0:
+            return str(group_subid) if is_header else str(group_subid + 1)
+        else:
+            return chr(ord('a') + (abs(group_subid)) % ALPHABET_LENGTH)
 
     def text_grid(self, width: int = 10) -> str:
         '''
@@ -313,7 +347,8 @@ class PrereqGrid:
                     cur_entry_str += '✗'
 
                 if self.__grid[col][row][type(self).GD_GROUP_KEY] and self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
-                    cur_group_str = "".join([str(val) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
+                    cur_group_str = type(self).get_group_key(self.__grid[col][row][type(self).GD_GROUP_KEY], numeric_only = True)
+                    #cur_group_str = "".join([str(val + 1) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
                     cur_entry_str += self.to_superscript(cur_group_str)
 
                 result += cur_entry_str.center(width)
