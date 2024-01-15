@@ -8,6 +8,7 @@ TO_SUPERSCRIPT = {0: '\u2070', 1: '\u00B9', 2: '\u00B2', 3: '\u00B3', 4: '\u2074
                   5: '\u2075', 6: '\u2076', 7: '\u2077', 8: '\u2078', 9: '\u2079'}
 # length of 'Prereq of:'  
 MIN_TEXT_GRID_WIDTH = 10
+ALPHABET_LENGTH = 26
 
 class PrereqGrid:
     # definitions for the course header
@@ -348,7 +349,6 @@ class PrereqGrid:
 
                 if self.__grid[col][row][type(self).GD_GROUP_KEY] and self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
                     cur_group_str = type(self).get_group_key(self.__grid[col][row][type(self).GD_GROUP_KEY], numeric_only = True)
-                    #cur_group_str = "".join([str(val + 1) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
                     cur_entry_str += self.to_superscript(cur_group_str)
 
                 result += cur_entry_str.center(width)

@@ -87,6 +87,11 @@ def split_course_code(code: str) -> tuple[str, str]:
     their respective department and course number components.
     Returns: string with course department, followed by string with course num
     '''
+    # This operates on the assumption that all coursecodes only use uppercase
+    # letters, which currently holds (for UVic, at least), but this may not 
+    # necessairly be true in all cases in future
+    code = code.strip().upper()
+
     # search for at least 3 decimals to avoid grabbing fake 'departments' for
     # high school level courses. Note that due to how the regex is configured,
     # this additional parameter does not cause any slowdown in the search
