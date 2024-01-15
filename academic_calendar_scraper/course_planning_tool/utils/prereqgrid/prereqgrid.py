@@ -130,8 +130,9 @@ class PrereqGrid:
         for idx, group in enumerate(groups_list):
             cur_group_key = parent_group_key + [idx]
             for req, course, is_coreq in group[type(self).GI_TARGETS]:
-               # FIXME: hardcoding not prereq for now
-               self.__grid[course][req] = (True, is_coreq, cur_group_key)
+               # For now, IS_PREREQ/IS_COREQ will always be False if the other
+               # is True. May want to refactor this in future
+               self.__grid[course][req] = (not is_coreq, is_coreq, cur_group_key)
             self.__fill_group_nums(group[type(self).GI_SUBGROUPS], cur_group_key)
 
     def __create_singleton_groups(self, groups_list: list[GroupInfoInternal]) -> None:
@@ -303,13 +304,19 @@ class PrereqGrid:
         for row, course in enumerate(self.__query_courses):
             result += course.get_coursecode().rjust(left_col_width)
             for col in range(len(self.__target_courses)):
-                if not self.__grid[col][row][type(self).GD_IS_PREREQ]:
-                    result += '✗'.center(width)
-                elif self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
-                    cur_group_str = "".join([str(val) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
-                    result += (("C" if self.__grid[col][row][type(self).GD_IS_COREQ] else '✓') + self.to_superscript(cur_group_str)).center(width)
+                cur_entry_str = ''
+                if self.__grid[col][row][type(self).GD_IS_PREREQ]:
+                    cur_entry_str += '✓'
+                elif self.__grid[col][row][type(self).GD_IS_COREQ]:
+                    cur_entry_str += 'C'
                 else:
-                    result += ("C" if self.__grid[col][row][type(self).GD_IS_COREQ] else '✓').center(width)
+                    cur_entry_str += '✗'
+
+                if self.__grid[col][row][type(self).GD_GROUP_KEY] and self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
+                    cur_group_str = "".join([str(val) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
+                    cur_entry_str += self.to_superscript(cur_group_str)
+
+                result += cur_entry_str.center(width)
             result += "\n" 
 
         if any(self.__header_row):
