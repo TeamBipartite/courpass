@@ -81,16 +81,15 @@ def parse_course_link(element) -> str:
     # links in the element are in the format '#/courses/view/...'
     return UVIC_ACADEMIC_CAL_INDEX +  element['href']
 
-def split_course_code(code: str) -> tuple[str, str]:
+def split_course_code(code: str, sanitize: bool = False) -> tuple[str, str]:
     '''
     Splits course codes in forms such as 'CSC110', 'CSC 110 ', or 'CS 110' into
     their respective department and course number components.
+    If sanitize, make uppercase for searching for courses
     Returns: string with course department, followed by string with course num
     '''
-    # This operates on the assumption that all coursecodes only use uppercase
-    # letters, which currently holds (for UVic, at least), but this may not 
-    # necessairly be true in all cases in future
-    code = code.strip().upper()
+    code = code.strip()
+    if sanitize: code = code.upper()
 
     # search for at least 3 decimals to avoid grabbing fake 'departments' for
     # high school level courses. Note that due to how the regex is configured,

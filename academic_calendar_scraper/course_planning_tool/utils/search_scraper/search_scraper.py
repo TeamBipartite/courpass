@@ -38,7 +38,7 @@ def create_query(course_titles: list[str], term: str = CURRENT_TERM) -> list[str
     results = []
 
     for course_title in course_titles:
-        course_dep, course_num = calendar_scrape.split_course_code(course_title)
+        course_dep, course_num = calendar_scrape.split_course_code(course_title, sanitize = True)
         results.append(get_search_url(course_dep, course_num, course_num, term))
 
     return results
