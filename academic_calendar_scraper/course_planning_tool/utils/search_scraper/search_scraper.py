@@ -4,7 +4,7 @@ from ..calendar_scrape import calendar_scrape
 from ..prereqtree.prereqtree import PrereqTree
 import urllib.request
 
-CURRENT_TERM = '202309'
+CURRENT_TERM = '202401'
 
 def get_course_objs(courses: list[str]) -> list[Course]:
     '''
