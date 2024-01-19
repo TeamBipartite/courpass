@@ -222,8 +222,7 @@ class PrereqGrid:
                 # if we are adding a non-empty list, group_0 was just set to 0
                 # in the children, so put them at the top level here
                 self.__groups_list.extend([tuple(subgroup) for subgroup in cur_tree_groupinfo[type(self).GI_SUBGROUPS]])
-            # shouldn't happen, but kept for error handing (NOTE may run into this
-            # later when adding coreq support...)
+            # shouldn't happen, but kept for error handing
             else:
                 self.__groups_list.append(cur_tree_groupinfo)
 
@@ -291,7 +290,7 @@ class PrereqGrid:
 
         key = ""
         for idx, subid in enumerate(group_id):
-            key += cls.translate_subkey(subid, idx, True, numeric_only = numeric_only)
+            key += cls.translate_subkey(subid, idx, True if not idx else False, numeric_only = numeric_only)
         
         return key
 
