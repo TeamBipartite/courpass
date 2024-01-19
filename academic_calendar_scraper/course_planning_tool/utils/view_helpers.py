@@ -1,3 +1,5 @@
+from .prereqgrid.prereqgrid import PrereqGrid
+
 #TODO: use python class constants once backend code is moved into django directory
 COURSE = 0
 ALL_PREREQS_SHOWN = 1
@@ -47,40 +49,12 @@ def get_processed_grid_data(grid_info: list[list[tuple[bool, bool, list[int]]]])
     for row in grid_info:
         row_result = []
         for col in row:
-            tup = (col[IS_PREREQ], col[IS_COREQ], get_group_key(col[GROUP_ID]))
+            tup = (col[IS_PREREQ], col[IS_COREQ], PrereqGrid.get_group_key(col[GROUP_ID]))
             row_result.append(tup)
         result.append(row_result)
     
     return result
         
-def get_group_key(group_id: list[int]) -> str:
-    """
-    Construct an alphanumeric group key (as a string) from the given 
-    group_id where elements at even index positions are digits in [0-9] 
-    and elements at odd index positions are characters in [a-z].
-    Ex: A group_id of [1, 0, 2, 1] becomes the string '1a2b'
-    """
-    if group_id == [0]: return ''
-
-    key = ""
-    for idx in range(len(group_id)):
-        key += translate_subkey(group_id[idx], idx, True)
-    
-    return key
-
-def translate_subkey(group_subid: int, idx: int, is_header: bool = False) -> str:
-    """
-    Generate a subkey based on the group_subid and the idx.
-    If the given idx is even and is_header is True then the returned subkey is group_subid,
-    else the returned subkey is group_subid + 1.
-    as a string. Otherwise, the returned subkey is a character in
-    [a-z] (at the offset of group_subid in the alphabet).
-    Ex: If group_subid = 2 and idx = 1 then 'c' is returned.
-    """
-    if idx % 2 == 0:
-        return str(group_subid) if is_header else str(group_subid + 1)
-    else:
-        return chr(ord('a') + (abs(group_subid)) % ALPHABET_LENGTH)
 
 #TODO: add named tuple to definition
 def get_group_legend(group_info: list[tuple[int, str, bool, list]]) -> str:
@@ -121,7 +95,7 @@ def get_rule_text(rule_info: tuple, key: int, idx: int) -> str:
     in rule_info. The rule text is prefixed with a subkey built from the given key and idx.
     """
     rule = ""
-    rule += f"<sup><b>{translate_subkey(key, idx)}</b></sup> "
+    rule += f"<sup><b>{PrereqGrid.translate_subkey(key, idx)}</b></sup> "
 
     if rule_info[NUM_REQS_FROM_GROUP] == 0:
        rule += f"All of these. "

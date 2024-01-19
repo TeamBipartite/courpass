@@ -1,9 +1,10 @@
 from ..course.course import Course
 from bs4 import BeautifulSoup
 from ..calendar_scrape import calendar_scrape
+from ..prereqtree.prereqtree import PrereqTree
 import urllib.request
 
-CURRENT_TERM = '202309'
+CURRENT_TERM = '202401'
 
 def get_course_objs(courses: list[str]) -> list[Course]:
     '''
@@ -37,7 +38,7 @@ def create_query(course_titles: list[str], term: str = CURRENT_TERM) -> list[str
     results = []
 
     for course_title in course_titles:
-        course_dep, course_num = calendar_scrape.split_course_code(course_title)
+        course_dep, course_num = calendar_scrape.split_course_code(course_title, sanitize = True)
         results.append(get_search_url(course_dep, course_num, course_num, term))
 
     return results
@@ -48,8 +49,10 @@ def populate_reqs(courses: list[Course]) -> None:
     '''
     for course in courses:
         course_reqs = calendar_scrape.get_reqs_tuple(course.get_cal_weblink())
-        course.set_reqs(*course_reqs)
-
+        if len(course_reqs) == 1:
+            course.set_reqs(*course_reqs)
+            continue
+        course.set_reqs(PrereqTree(num_reqd = PrereqTree.ALL, reqs_list = course_reqs))
 
 def get_courses(href: str) -> list[Course]:
     '''

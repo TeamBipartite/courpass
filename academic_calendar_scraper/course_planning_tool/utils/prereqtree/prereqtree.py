@@ -72,7 +72,7 @@ class PrereqTree:
     def get_min_grade(self):
         return self.__min_grade
 
-    def get_is_coreq(self):
+    def is_coreq(self):
         return self.__is_coreq
         
     def get_notes(self):

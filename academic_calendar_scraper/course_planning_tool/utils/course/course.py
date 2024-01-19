@@ -60,9 +60,8 @@ class Course:
 
         return ('%s%s' % (self.__dep, self.__num))
 
-    def set_reqs(self, prereqs: 'PrereqTree', coreqs: 'PrereqTree') -> None:
+    def set_reqs(self, prereqs: 'PrereqTree') -> None:
         self.__prereqs = prereqs
-        self.__coreqs  = coreqs
 
     def get_cal_weblink(self) -> str:        
         return self.__cal_weblink
