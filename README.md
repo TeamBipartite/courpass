@@ -21,14 +21,15 @@ $ python3 -O main.py <LIST_OF_COURSES_TO_SEARCH> <LIST_OF_PREREQS_TO_FIND>
 where `LIST_OF_COURSES_TO_SEARCH` and `LIST_OF_PREREQS_TO_FIND` are comma-separated lists. For example:
 
 ```bash
-$ python3 -O main.py CSC360,CSC361,CSC370,CSC421,MATH100,MATH346 CSC226,SENG265,CSC230,ECE255,MATH204,MATH200
-Prereq of: CSC360*    CSC361   CSC370*   CSC421⁴   MATH100+  MATH346  
-    CSC226    ✗         ✗         ✗         ✓         ✗         ✗     
+$ python3 -O main.py CSC360,CSC361,CSC370,CSC421,MATH100,MATH346 CSC226,SENG265,CSC230,ECE255,MATH120,MATH204,MATH200
+Prereq of: CSC360*   CSC361*   CSC370*   CSC421⁴  MATH100*+  MATH346* 
+    CSC226    ✗         C         ✗         ✓         ✗         ✗     
    SENG265    ✓         ✓         ✓         ✗         ✗         ✗     
     CSC230    ✓¹        ✓²        ✗         ✗         ✗         ✗     
     ECE255    ✓¹        ✓²        ✗         ✗         ✗         ✗     
-   MATH204    ✗         ✗         ✗         ✗         ✗        ✓³¹    
-   MATH200    ✗         ✗         ✗         ✗         ✗        ✓³⁰    
+   MATH120    ✗         ✗         ✗         ✗        ✓³¹        ✗     
+   MATH204    ✗         ✗         ✗         ✗         ✗        ✓⁴²    
+   MATH200    ✗         ✗         ✗         ✗         ✗        ✓⁴¹    
 -----------
 Header legend:
      ²³⁴⁵: Minimum year standing required.
@@ -36,11 +37,14 @@ Header legend:
         +: Or department permission.
 -----------
 Grid legend:
-        1: Any 1 of these. Not all courses in this group shown. See calendar for details.
-        2: Any 1 of these. Not all courses in this group shown. See calendar for details.
-        3: Any 1 of these.
-              3 0: All of these. Not all courses in this group shown. See calendar for details.
-              3 1: All of these.
+ ✓: Prerequsite, C: Corequisite, ✗: Not a co/prequisite
+        1: Any 1 of these. Not all options in this group shown. See calendar for details.
+        2: Any 1 of these. Not all options in this group shown. See calendar for details.
+        3: Any 1 of these. Not all options in this group shown. See calendar for details.
+              3 1: All of these. Minimum grade of C+ required.
+        4: Any 1 of these.
+              4 1: All of these. Not all options in this group shown. See calendar for details.
+              4 2: All of these.
 ```
 
 To enable debuging output, remove the `-O` argument from the launch command.

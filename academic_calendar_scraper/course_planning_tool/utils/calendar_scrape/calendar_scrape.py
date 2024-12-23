@@ -28,8 +28,7 @@ def get_reqs_tuple(url: str) -> tuple[PrereqTree, PrereqTree]:
     '''
     prereq_sectn_htmls = get_calendar_info(url)
 
-    return (parse_reqs(prereq_sectn_htmls[0]) if len(prereq_sectn_htmls) > 0 else None, 
-            parse_reqs(prereq_sectn_htmls[1]) if len(prereq_sectn_htmls) > 1 else None)
+    return [parse_reqs(prereq_sectn_html) for prereq_sectn_html in prereq_sectn_htmls]
 
 def get_calendar_info(url) -> list[str]:
     driver = None
@@ -82,12 +81,16 @@ def parse_course_link(element) -> str:
     # links in the element are in the format '#/courses/view/...'
     return UVIC_ACADEMIC_CAL_INDEX +  element['href']
 
-def split_course_code(code: str) -> tuple[str, str]:
+def split_course_code(code: str, sanitize: bool = False) -> tuple[str, str]:
     '''
     Splits course codes in forms such as 'CSC110', 'CSC 110 ', or 'CS 110' into
     their respective department and course number components.
+    If sanitize, make uppercase for searching for courses
     Returns: string with course department, followed by string with course num
     '''
+    code = code.strip()
+    if sanitize: code = code.upper()
+
     # search for at least 3 decimals to avoid grabbing fake 'departments' for
     # high school level courses. Note that due to how the regex is configured,
     # this additional parameter does not cause any slowdown in the search
@@ -109,7 +112,7 @@ def parse_reqs(raw_html: str, is_coreq = False) -> PrereqTree:
     # always 'complete one of' for the top-level items?
     return PrereqTree(1, [parse_reqs_rec(root) for root in roots], '', None)
 
-def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
+def parse_reqs_rec(reqs_tree: BeautifulSoup, is_coreq: bool = False) -> PrereqTree:
     '''
     Given a BeautifulSoup tag to the li element representing the root of a UVic
     pre/coreq tree, parse the tree and return a PrereqTree with the data
@@ -161,16 +164,18 @@ def parse_reqs_rec(reqs_tree: BeautifulSoup) -> PrereqTree:
         min_grade = next(title_strings)
         req_title = next(title_strings)
 
+    is_coreq = True if "or concurrently enrolled in" in req_title else False
+
     # we can simply grab next(title_strings) here, because the cases where there
     # is a number, the number is in its own <span> (grabbed by the call to next),
     # but the entire 'Complete all of the following:' strings is together as
     # one string
     req_num = int(next(title_strings)) if ('all' not in req_title and 'each' not in req_title) \
                                        else PrereqTree.ALL
-    results = [parse_reqs_rec(child) for child in children.contents]
+    results = [parse_reqs_rec(child, is_coreq = is_coreq) for child in children.contents]
     
     return PrereqTree(req_num, reqs_list = results, min_grade = min_grade, 
-                               notes = notes)
+                               is_coreq = is_coreq, notes = notes)
 
 if __name__ == '__main__':
     if (len(sys.argv) != 2):

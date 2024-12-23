@@ -8,6 +8,7 @@ TO_SUPERSCRIPT = {0: '\u2070', 1: '\u00B9', 2: '\u00B2', 3: '\u00B3', 4: '\u2074
                   5: '\u2075', 6: '\u2076', 7: '\u2077', 8: '\u2078', 9: '\u2079'}
 # length of 'Prereq of:'  
 MIN_TEXT_GRID_WIDTH = 10
+ALPHABET_LENGTH = 26
 
 class PrereqGrid:
     # definitions for the course header
@@ -129,9 +130,10 @@ class PrereqGrid:
         '''
         for idx, group in enumerate(groups_list):
             cur_group_key = parent_group_key + [idx]
-            for req, course in group[type(self).GI_TARGETS]:
-               # FIXME: hardcoding not prereq for now
-               self.__grid[course][req] = (True, False, cur_group_key)
+            for req, course, is_coreq in group[type(self).GI_TARGETS]:
+               # For now, IS_PREREQ/IS_COREQ will always be False if the other
+               # is True. May want to refactor this in future
+               self.__grid[course][req] = (not is_coreq, is_coreq, cur_group_key)
             self.__fill_group_nums(group[type(self).GI_SUBGROUPS], cur_group_key)
 
     def __create_singleton_groups(self, groups_list: list[GroupInfoInternal]) -> None:
@@ -152,7 +154,7 @@ class PrereqGrid:
                             parent_groupinfo: GroupInfo = None,
                             course_to_idx: dict[Course, int] = None, 
                             course_header: list = [None, True, False, 0],
-                            group_0: bool = True):
+                            group_0: bool = True, is_coreq: bool = False):
         '''
         Parse the information in the given req_tree into the given course_reqs 
         'array' (list), creating and/or adding to this PrereqGrid's groups as 
@@ -172,6 +174,8 @@ class PrereqGrid:
         if req_tree.get_num_reqd() > PrereqTree.ALL and len(req_tree.get_reqs_list()) > 1:
             if __debug__: print("%r: SETTING GROUP_0 = False" % req_tree)
             group_0 = False
+        if req_tree.is_coreq():
+            is_coreq = True
 
         for sub_tree in req_tree:
             if __debug__: print("SEARCHING %r" % (sub_tree))
@@ -184,7 +188,7 @@ class PrereqGrid:
             elif tree_type == PrereqTree.SINGLE_COURSE:
                 req = sub_tree.get_reqs_list()
                 if req in self.__query_courses:
-                    req_targets = (course_to_idx[req], course)
+                    req_targets = (course_to_idx[req], course, is_coreq)
                     # this is cleaned up later - at this stage we do not know if
                     # we will find any other nested groups in the group or not.
                     # we assume here that we will not, but we will cleanup later 
@@ -202,7 +206,7 @@ class PrereqGrid:
             elif tree_type >= PrereqTree.ALL:
                 len_before = len(cur_tree_groupinfo[type(self).GI_SUBGROUPS])
                 course_header = self.__parse_prereq_tree(course, sub_tree, parent_groupinfo=cur_tree_groupinfo,\
-                                                                                                  course_to_idx=course_to_idx, course_header=course_header, group_0 = group_0)
+                                                                                                  course_to_idx=course_to_idx, course_header=course_header, group_0 = group_0, is_coreq = is_coreq)
                 len_after = len(cur_tree_groupinfo[type(self).GI_SUBGROUPS])
                 if (len_after == len_before):
                     cur_tree_groupinfo[type(self).GI_ALL_SHOWN] = False
@@ -218,8 +222,7 @@ class PrereqGrid:
                 # if we are adding a non-empty list, group_0 was just set to 0
                 # in the children, so put them at the top level here
                 self.__groups_list.extend([tuple(subgroup) for subgroup in cur_tree_groupinfo[type(self).GI_SUBGROUPS]])
-            # shouldn't happen, but kept for error handing (NOTE may run into this
-            # later when adding coreq support...)
+            # shouldn't happen, but kept for error handing
             else:
                 self.__groups_list.append(cur_tree_groupinfo)
 
@@ -274,6 +277,40 @@ class PrereqGrid:
                       False otherwise
         '''
         return self.__groups_list
+        
+    @classmethod
+    def get_group_key(cls, group_id: list[int], numeric_only: bool = False) -> str:
+        """
+        Construct an alphanumeric group key (as a string) from the given 
+        group_id where elements at even index positions are digits in [0-9] 
+        and elements at odd index positions are characters in [a-z].
+        Ex: A group_id of [1, 0, 2, 1] becomes the string '1a2b'
+        """
+        if group_id == [0]: return ''
+
+        key = ""
+        for idx, subid in enumerate(group_id):
+            key += cls.translate_subkey(subid, idx, True if not idx else False, numeric_only = numeric_only)
+        
+        return key
+
+    @staticmethod
+    def translate_subkey(group_subid: int, idx: int, is_header: bool = False,
+                         numeric_only: bool = False) -> str:
+        """
+        Generate a subkey based on the group_subid and the idx.
+        If the given idx is even and is_header is True then the returned subkey is group_subid,
+        else the returned subkey is group_subid + 1.
+        as a string. Otherwise, the returned subkey is a character in
+        [a-z] (at the offset of group_subid in the alphabet).
+        Ex: If group_subid = 2 and idx = 1 then 'c' is returned.
+
+        If numeric_only, return numeric subkeys regardless of idx.
+        """
+        if numeric_only or idx % 2 == 0:
+            return str(group_subid) if is_header else str(group_subid + 1)
+        else:
+            return chr(ord('a') + (abs(group_subid)) % ALPHABET_LENGTH)
 
     def text_grid(self, width: int = 10) -> str:
         '''
@@ -301,13 +338,19 @@ class PrereqGrid:
         for row, course in enumerate(self.__query_courses):
             result += course.get_coursecode().rjust(left_col_width)
             for col in range(len(self.__target_courses)):
-                if not self.__grid[col][row][type(self).GD_IS_PREREQ]:
-                    result += '✗'.center(width)
-                elif self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
-                    cur_group_str = "".join([str(val) for val in self.__grid[col][row][type(self).GD_GROUP_KEY]])
-                    result += ('✓'+ self.to_superscript(cur_group_str)).center(width)
+                cur_entry_str = ''
+                if self.__grid[col][row][type(self).GD_IS_PREREQ]:
+                    cur_entry_str += '✓'
+                elif self.__grid[col][row][type(self).GD_IS_COREQ]:
+                    cur_entry_str += 'C'
                 else:
-                    result += '✓'.center(width)
+                    cur_entry_str += '✗'
+
+                if self.__grid[col][row][type(self).GD_GROUP_KEY] and self.__grid[col][row][type(self).GD_GROUP_KEY] != [0]:
+                    cur_group_str = type(self).get_group_key(self.__grid[col][row][type(self).GD_GROUP_KEY], numeric_only = True)
+                    cur_entry_str += self.to_superscript(cur_group_str)
+
+                result += cur_entry_str.center(width)
             result += "\n" 
 
         if any(self.__header_row):
@@ -330,7 +373,7 @@ class PrereqGrid:
         Generate and return a human-redable description of the (potentionally) 
         nested groups in this PrereqGrid. 
         '''
-        result = '-----------\nGrid legend:\n' if parent_level == ''  and root_group != [] else ''
+        result = '-----------\nGrid legend:\n ✓: Prerequsite, C: Corequisite, ✗: Not a co/prequisite\n' if parent_level == ''  else ''
         for group_idx, group_info in enumerate(root_group):
             # adjust for root group 0 being used for always necesary
             group_num = parent_level + '%d' % (group_idx+1)

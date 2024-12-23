@@ -3,8 +3,6 @@ from django.views.decorators.csrf import csrf_protect
 from django.template.context_processors import csrf
 from .utils.view_helpers import get_group_legend, get_header_legend_data, get_processed_grid_data
 from .utils.prereqgrid.prereqgrid import PrereqGrid
-from .utils.calendar_scrape.calendar_scrape import *
-from .utils.search_scraper.search_scraper import *
 
 @csrf_protect
 def course_planning_tool(request):
