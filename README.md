@@ -2,7 +2,8 @@
 Easily visualize UVic course prerequisites.
 
 [![Build Status](https://www.johnnyw.ca/jenkins/buildStatus/icon?job=academic-calendar-scraper%2Fcalendar-scrape-regression%2Fmain)](https://www.johnnyw.ca/jenkins/job/academic-calendar-scraper/job/calendar-scrape-regression/job/main/)
-<img src="docs/courpass_screenshot.png" width="75%">
+
+<img src="docs/courpass_screenshot.png" width="85%">
 
 **Please note that this project is no longer operational in its current state,
 as the underlying UVic webpages it relied on have since been deprecated.**
