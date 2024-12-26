@@ -65,10 +65,12 @@ To enable debugging output, remove the `-O` argument from the launch command.
 
 
 # Deploy
-Deployment, largely follows the standard Django deployment steps, which will vary
-depending on your exact setup. A good guide
-that discusses these steps, using `apache2` and `mod_wsgi` (what we have used to
-deploy the `courpass.ca` website) is available [here](https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/modwsgi/).
+Deployment largely follows the standard Django deployment steps, which will vary
+depending on your exact setup. We deployed the `courpass.ca` website using
+`apache2` with `mod_wsgi` on an Ubuntu 22.04 server. 
+
+A good guide
+that discusses hosting Django using `apache2` and `mod_wsgi` is available [here](https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/modwsgi/).
 When configuring your server, note that `academic_calendar_scraper/` is the root
 of the Django directory in this repo.
 
