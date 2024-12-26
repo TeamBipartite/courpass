@@ -73,7 +73,7 @@ When configuring your server, note that `academic_calendar_scraper/` is the root
 of the Django directory in this repo.
 
 Note that since we use the Font Awesome Free icons, you will need to make sure to
-serve these icons in your deployment. For our case, we needed to add the following
+serve these icons in your deployment. In our case, we needed to add the following
 line to our `apache2` site configuration:
 
 ```
